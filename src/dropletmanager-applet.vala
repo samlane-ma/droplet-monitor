@@ -94,6 +94,7 @@ namespace DropletApplet {
         private string tokenfile;
         private File file;
         private FileMonitor monitor;
+        private NetworkMonitor netmon;
 
         public string uuid { public set; public get; }
 
@@ -125,6 +126,13 @@ namespace DropletApplet {
 
             popover.get_child().show_all();
             show_all();
+
+            netmon = NetworkMonitor.get_default ();
+            netmon.network_changed.connect (() => {
+                popover.unselect_droplet();
+                popover.update();
+            });
+
 
             try {
                 file = File.new_for_path (tokenfile);

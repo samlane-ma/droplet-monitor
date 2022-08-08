@@ -26,8 +26,7 @@ class DropletList: Gtk.ListBox {
         this.icon = icon;
     }
 
-    private async void get_droplet_list ()
-    {
+    private async void get_droplet_list () {
         new Thread<void*> (null, () => {
             try {
                 this.droplets = DOcean.get_droplets(token);
@@ -48,10 +47,12 @@ class DropletList: Gtk.ListBox {
         });
     }
 
+    private bool is_empty() {
+        return (this.get_children() == null);
+    }
+
     public bool has_selected() {
-        if (this.get_children() == null) {
-            return false;
-        }
+        if (is_empty()) return false;
         if (this.get_selected_row().get_index() >= 0) {
             return true;
         }
@@ -59,9 +60,7 @@ class DropletList: Gtk.ListBox {
     }
 
     public bool is_selected_running() {
-        if (this.get_children() == null) {
-            return false;
-        }
+        if ( is_empty()) return false;
         int index = this.get_selected_row().get_index();
         if (has_selected()) {
             return (droplets[index].status == "active");
@@ -75,15 +74,24 @@ class DropletList: Gtk.ListBox {
     }
 
     private bool update_gui () {
+
+        // Mostly prevents index error crashes and GLib asserion errors
+        // but needs cleanup and simplification
+
         int index = -1;
         string selected;
         bool all_active = true;
         bool empty = false;
-        if (this.get_children() == null) {
+
+        if (is_empty()) {
             this.unselect_all();
             empty = true;
         } else {
-            index = this.get_selected_row().get_index();
+            if (this.get_selected_row() == null) {
+                index = -1;
+            } else {
+                index = this.get_selected_row().get_index();
+            } 
         }
         if (index >= 0 && !empty) {
             selected = droplets[this.get_selected_row().get_index()].name;
@@ -91,6 +99,7 @@ class DropletList: Gtk.ListBox {
             this.unselect_all();
             selected = "";
         }
+
         this.foreach ((element) => this.remove (element));
         int i = 0;
         foreach (var droplet in droplets) {
@@ -123,9 +132,7 @@ class DropletList: Gtk.ListBox {
     }
 
     public void shutdown_selected () {
-        if (this.get_children() == null) {
-            return;
-        }
+        if (is_empty()) return;
         int index = this.get_selected_row().get_index();
         if (index >= 0) {
             try {
@@ -141,9 +148,7 @@ class DropletList: Gtk.ListBox {
     }
 
     public void startup_selected () {
-        if (this.get_children() == null) {
-            return;
-        }
+        if (is_empty()) return;
         int index = this.get_selected_row().get_index();
         if (index >= 0) {
             try {

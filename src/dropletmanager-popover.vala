@@ -23,6 +23,10 @@ namespace DropletPopover {
             droplet_list.unselect_all();
         }
 
+        public void update() {
+            droplet_list.update();
+        }
+
         public DropletPopover(Gtk.EventBox relative_parent, string token) {
             Object(relative_to: relative_parent);
 
@@ -32,8 +36,8 @@ namespace DropletPopover {
             grid.set_column_spacing(10);
 
             droplet_list.set_update_icon((Gtk.Image) relative_parent.get_child());
-            //Gtk.Button button_info = new Gtk.Button();
-            //button_info.set_label("Information");
+            Gtk.Button button_refresh = new Gtk.Button();
+            button_refresh.set_label("Refresh");
             Gtk.Button button_start = new Gtk.Button();
             button_start.set_label("Start");
             Gtk.Button button_stop = new Gtk.Button();
@@ -46,7 +50,7 @@ namespace DropletPopover {
             grid.attach(droplet_list,0,2,3,1);
             grid.attach(label_status,0,3,3,1);
             grid.attach(new Gtk.Separator(Gtk.Orientation.HORIZONTAL),0,4,3,1);
-            //grid.attach(button_info,0,5,1,1);
+            grid.attach(button_refresh,0,5,1,1);
             grid.attach(button_start,1,5,1,1);
             grid.attach(button_stop,2,5 ,1,1);
             this.add((grid));
@@ -72,6 +76,11 @@ namespace DropletPopover {
                     });
                 }
             });
+
+            button_refresh.clicked.connect(() => {
+                droplet_list.update();
+            });
+
             this.get_child().show_all();
 
         }
