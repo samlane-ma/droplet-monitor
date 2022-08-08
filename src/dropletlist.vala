@@ -61,9 +61,9 @@ class DropletList: Gtk.ListBox {
 
     public bool is_selected_running() {
         if ( is_empty()) return false;
-        int index = this.get_selected_row().get_index();
+        int current_selected = this.get_selected_row().get_index();
         if (has_selected()) {
-            return (droplets[index].status == "active");
+            return (droplets[current_selected].status == "active");
         }
         return false;
     }
@@ -78,7 +78,7 @@ class DropletList: Gtk.ListBox {
         // Mostly prevents index error crashes and GLib asserion errors
         // but needs cleanup and simplification
 
-        int index = -1;
+        int current_selected = -1;
         string selected;
         bool all_active = true;
         bool empty = false;
@@ -88,12 +88,12 @@ class DropletList: Gtk.ListBox {
             empty = true;
         } else {
             if (this.get_selected_row() == null) {
-                index = -1;
+                current_selected = -1;
             } else {
-                index = this.get_selected_row().get_index();
-            } 
+                current_selected = this.get_selected_row().get_index();
+            }
         }
-        if (index >= 0 && !empty) {
+        if (current_selected >= 0 && !empty) {
             selected = droplets[this.get_selected_row().get_index()].name;
         } else {
             this.unselect_all();
@@ -101,7 +101,7 @@ class DropletList: Gtk.ListBox {
         }
 
         this.foreach ((element) => this.remove (element));
-        int i = 0;
+        int found_count = 0;
         foreach (var droplet in droplets) {
             var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 20);
             var label = new Gtk.Label(droplet.name);
@@ -116,45 +116,29 @@ class DropletList: Gtk.ListBox {
             hbox.pack_start(label, false, false, 5);
             this.insert(hbox, -1);
             if (selected == droplet.name && !empty) {
-                this.select_row(this.get_row_at_index(i));
+                this.select_row(this.get_row_at_index(found_count));
             }
-            i++;
+            found_count++;
         }
-        if (i == 0) {
+        if (found_count == 0) {
             icon.set_from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
         } else if (all_active) {
             icon.set_from_icon_name("do-server-ok-symbolic", Gtk.IconSize.MENU);
         } else {
-            icon.set_from_icon_name("do-server-warn-symbolic", Gtk.IconSize.MENU);       
-        } 
+            icon.set_from_icon_name("do-server-warn-symbolic", Gtk.IconSize.MENU);
+        }
         this.show_all();
         return false;
     }
 
-    public void shutdown_selected () {
+    public void toggle_selected (int method) {
         if (is_empty()) return;
-        int index = this.get_selected_row().get_index();
-        if (index >= 0) {
+        int current_selected = this.get_selected_row().get_index();
+        if (current_selected >= 0) {
             try {
-                DOcean.power_droplet(token,droplets[index], DOcean.OFF);
+                DOcean.power_droplet(token,droplets[current_selected], method);
             } catch (Error e) {
-                message("Cannot stop server: %s", e.message);
-            }
-            Timeout.add_seconds_full(GLib.Priority.DEFAULT, 20, () => {
-                update();
-                return true;
-            });
-        }
-    }
-
-    public void startup_selected () {
-        if (is_empty()) return;
-        int index = this.get_selected_row().get_index();
-        if (index >= 0) {
-            try {
-                DOcean.power_droplet(token,droplets[index], DOcean.ON);
-            } catch (Error e) {
-                message("Cannot start server: %s", e.message);
+                message("Error accessing server: %s", e.message);
             }
             Timeout.add_seconds_full(GLib.Priority.DEFAULT, 20, () => {
                 update();
@@ -165,4 +149,4 @@ class DropletList: Gtk.ListBox {
 
 } // end class
 
-} // end namespace 
+} // end namespace

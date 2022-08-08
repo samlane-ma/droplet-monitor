@@ -7,26 +7,6 @@ namespace DropletPopover {
 
         private DropletList.DropletList droplet_list;
 
-        void on_shutdown_clicked (DropletList.DropletList dl) {
-            dl.shutdown_selected();
-        }
-        
-        void on_startup_clicked (DropletList.DropletList dl) {
-            dl.startup_selected();
-        }
-
-        public void update_token (string new_token) {
-            droplet_list.update_token(new_token);
-        }
-
-        public void unselect_droplet() {
-            droplet_list.unselect_all();
-        }
-
-        public void update() {
-            droplet_list.update();
-        }
-
         public DropletPopover(Gtk.EventBox relative_parent, string token) {
             Object(relative_to: relative_parent);
 
@@ -54,10 +34,10 @@ namespace DropletPopover {
             grid.attach(button_start,1,5,1,1);
             grid.attach(button_stop,2,5 ,1,1);
             this.add((grid));
-            
+
             button_stop.clicked.connect(() => {
                 if (droplet_list.has_selected() && droplet_list.is_selected_running()) {
-                    on_shutdown_clicked(droplet_list);
+                    droplet_list.toggle_selected(DOcean.OFF);
                     label_status.set_text("Shutdown sent. This may take a minute to complete.");
                     Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
                         label_status.set_text("");
@@ -65,10 +45,10 @@ namespace DropletPopover {
                     });
                 }
             });
-        
+
             button_start.clicked.connect(() => {
                 if (droplet_list.has_selected() && !droplet_list.is_selected_running()) {
-                    on_startup_clicked(droplet_list);
+                    droplet_list.toggle_selected(DOcean.ON);
                     label_status.set_text("Startup sent. This may take a minute to complete.");
                     Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
                         label_status.set_text("");
@@ -83,6 +63,20 @@ namespace DropletPopover {
 
             this.get_child().show_all();
 
+        }
+
+        // These are here to give parent access to certain
+
+        public void update_token (string new_token) {
+            droplet_list.update_token(new_token);
+        }
+
+        public void unselect_droplet() {
+            droplet_list.unselect_all();
+        }
+
+        public void update() {
+            droplet_list.update();
         }
     }
 

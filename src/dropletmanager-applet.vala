@@ -53,7 +53,7 @@ namespace DropletApplet {
                 "https://docs.digitalocean.com/reference/api/create-personal-access-token/",
                 "For info on how to obtain your\npersonal Digital Ocean™ token"
             );
-            
+
             this.attach(link,0,0,1,1);
             Gtk.Label label_token = new Gtk.Label("Droplet Manager Token:");
             Gtk.Button button_update = new Gtk.Button();
