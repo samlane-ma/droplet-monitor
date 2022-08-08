@@ -1,0 +1,8 @@
+[Plugin]
+Module=dropletmanager.so
+Name=Droplet Monitor
+Description=Droplet Manager
+Authors=Sam Lane
+Copyright=Sam Lane
+Website=https://github.com/samlane-ma
+Icon=do-server-ok-symbolic
