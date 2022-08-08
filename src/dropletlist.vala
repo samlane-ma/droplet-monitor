@@ -15,7 +15,6 @@ class DropletList: Gtk.ListBox {
         placeholder = new Gtk.Label("  Searching for droplets  \n\n\n");
         this.set_placeholder(placeholder);
         placeholder.show();
-        this.row_activated.connect(on_row_activated);
         update();
         Timeout.add_seconds_full(GLib.Priority.DEFAULT, 300, () => {
             update();
@@ -50,6 +49,9 @@ class DropletList: Gtk.ListBox {
     }
 
     public bool has_selected() {
+        if (this.get_children() == null) {
+            return false;
+        }
         if (this.get_selected_row().get_index() >= 0) {
             return true;
         }
@@ -57,6 +59,9 @@ class DropletList: Gtk.ListBox {
     }
 
     public bool is_selected_running() {
+        if (this.get_children() == null) {
+            return false;
+        }
         int index = this.get_selected_row().get_index();
         if (has_selected()) {
             return (droplets[index].status == "active");
@@ -70,10 +75,17 @@ class DropletList: Gtk.ListBox {
     }
 
     private bool update_gui () {
-        int index = this.get_selected_row().get_index();
+        int index = -1;
         string selected;
         bool all_active = true;
-        if (index >= 0) {
+        bool empty = false;
+        if (this.get_children() == null) {
+            this.unselect_all();
+            empty = true;
+        } else {
+            index = this.get_selected_row().get_index();
+        }
+        if (index >= 0 && !empty) {
             selected = droplets[this.get_selected_row().get_index()].name;
         } else {
             this.unselect_all();
@@ -94,7 +106,7 @@ class DropletList: Gtk.ListBox {
             hbox.pack_start(status_image, false, false, 5);
             hbox.pack_start(label, false, false, 5);
             this.insert(hbox, -1);
-            if (selected == droplet.name) {
+            if (selected == droplet.name && !empty) {
                 this.select_row(this.get_row_at_index(i));
             }
             i++;
@@ -111,6 +123,9 @@ class DropletList: Gtk.ListBox {
     }
 
     public void shutdown_selected () {
+        if (this.get_children() == null) {
+            return;
+        }
         int index = this.get_selected_row().get_index();
         if (index >= 0) {
             try {
@@ -126,6 +141,9 @@ class DropletList: Gtk.ListBox {
     }
 
     public void startup_selected () {
+        if (this.get_children() == null) {
+            return;
+        }
         int index = this.get_selected_row().get_index();
         if (index >= 0) {
             try {
@@ -138,9 +156,6 @@ class DropletList: Gtk.ListBox {
                 return true;
             });
         }
-    }
-    
-    private void on_row_activated () {
     }
 
 } // end class
