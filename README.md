@@ -1,6 +1,6 @@
 # Budgie Droplet Monitor Applet
 
-## Monitor Digital Ocean Droplets fro the Budgie Panel
+## Monitor Digital Ocean Droplets for the Budgie Panel
 
 ### This applet is not associated in any way with DigitalOcean, LLC
 ### This applet will allow you to see the status of, start, and stop droplets
