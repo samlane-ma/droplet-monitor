@@ -34,6 +34,7 @@ class DropletList: Gtk.ListBox {
                 this.droplets = DOcean.get_droplets(token);
             } catch (Error e) {
                 this.droplets = {};
+                this.unselect_all();
             }
             Idle.add (get_droplet_list.callback);
             return null;
@@ -75,6 +76,7 @@ class DropletList: Gtk.ListBox {
         if (index >= 0) {
             selected = droplets[this.get_selected_row().get_index()].name;
         } else {
+            this.unselect_all();
             selected = "";
         }
         this.foreach ((element) => this.remove (element));
