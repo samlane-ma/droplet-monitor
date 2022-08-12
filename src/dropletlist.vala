@@ -14,13 +14,16 @@ class DropletList: Gtk.ListBox {
     private Mutex mutex = Mutex();
     private Queue<string> start_queue;
     private Queue<string> stop_queue;
-    private string last_selected = "";
+    private Queue<string> reboot_queue;
+    private string[] running = {};
     private bool is_selected = false;
+    private string last_selected = "";
 
     public DropletList(string token) {
         this.token = token;
         start_queue = new Queue<string> ();
         stop_queue = new Queue<string> ();
+        reboot_queue = new Queue<string> ();
         placeholder = new Gtk.Label("  Searching for droplets  \n\n\n");
         this.set_placeholder(placeholder);
         placeholder.show();
@@ -42,7 +45,6 @@ class DropletList: Gtk.ListBox {
         }
     }
         
-
     public void add_start () {
         if (is_empty()) return;
         if (is_selected) {
@@ -55,6 +57,17 @@ class DropletList: Gtk.ListBox {
         if (is_selected) {
             stop_queue.push_head(last_selected);
         }
+    }
+
+    public void add_reboot () {
+        if (is_empty()) return;
+        if (is_selected) {
+            reboot_queue.push_head(last_selected);
+        }
+    }
+
+    public void quit_scan() {
+        stay_running = false;
     }
 
     private void* get_all_droplets () {
@@ -87,6 +100,18 @@ class DropletList: Gtk.ListBox {
 		        toggle_selected(selected_droplet, DOcean.ON);
             }
 
+            // Check for reboots
+            item = null;
+            string[] reboot_list = { };
+	        while ((item = reboot_queue.pop_head ()) != null) {
+		        if (!(item in reboot_list)) {
+                    reboot_list += item;
+                }
+            }
+            foreach (var selected_droplet in reboot_list) {
+		        toggle_selected(selected_droplet, DOcean.REBOOT);
+            }
+
             // Regular update
             if (cycle > 20 || decay > 0) {
                 droplets = {};
@@ -97,7 +122,7 @@ class DropletList: Gtk.ListBox {
                 }    
                 this_check = "";
                 foreach (var droplet in droplets) {
-                    this_check += @"$(droplet.name)_$(droplet.status)_$(droplet.ipv4[0])_";
+                    this_check += @"$(droplet.name)_$(droplet.status)_$(droplet.public_ipv4)_";
                 }
                 if (old_check != this_check) {
                     Idle.add( () => {
@@ -147,13 +172,15 @@ class DropletList: Gtk.ListBox {
 
     private bool update_gui (DODroplet[] droplet_list) {
 
-        // Mostly prevents index error crashes and GLib asserion errors
-        // but needs cleanup and simplification
+        if (!stay_running) {
+            return false;
+        }
 
         int current_selected = -1;
         string selected;
         bool all_active = true;
         bool empty = false;
+        running = {};
 
         if (is_empty()) {
             this.unselect_all();
@@ -176,16 +203,21 @@ class DropletList: Gtk.ListBox {
         int found_count = 0;
         foreach (var droplet in droplet_list) {
             var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 20);
-            var label = new Gtk.Label(droplet.name);
+            var name_label = new Gtk.Label(droplet.name);
+            var ip_label = new Gtk.Label(droplet.public_ipv4);
+            string ip_tooltip = @"Private: $(droplet.private_ipv4)\nPublic: $(droplet.public_ipv4)\nFloating: $(droplet.floating_ip)\nIPv6: $(droplet.public_ipv6)";
+            ip_label.set_tooltip_text(ip_tooltip);
             Gtk.Image status_image = new Gtk.Image();
             if (droplet.status == "active") {
+                running += droplet.id;
                 status_image.set_from_icon_name("emblem-checked", Gtk.IconSize.LARGE_TOOLBAR);
             } else {
                 status_image.set_from_icon_name("emblem-error", Gtk.IconSize.LARGE_TOOLBAR);
                 all_active = false;
             }
             hbox.pack_start(status_image, false, false, 5);
-            hbox.pack_start(label, false, false, 5);
+            hbox.pack_start(name_label, false, false, 5);
+            hbox.pack_end(ip_label, false, false, 5);
             this.insert(hbox, -1);
             if (selected == droplet.name && !empty) {
                 this.select_row(this.get_row_at_index(found_count));
@@ -201,6 +233,19 @@ class DropletList: Gtk.ListBox {
         }
         this.show_all();
         return false;
+    }
+
+    public string get_selected_ip () {
+        foreach (var droplet in droplets) {
+            if (droplet.id == last_selected) {
+                return droplet.public_ipv4;
+            }
+        }
+        return "";
+    }
+
+    public bool selected_is_running() {
+        return (last_selected in running);
     }
 
     public void toggle_selected (string selected_droplet, int method) {

@@ -85,6 +85,9 @@ namespace DropletApplet {
 
     public class DropletApplet : Budgie.Applet {
 
+        private GLib.Settings? panel_settings;
+        private GLib.Settings? currpanelsubject_settings;
+
         private Gtk.EventBox widget;
         private Gtk.Image icon;
         private DropletPopover.DropletPopover? popover = null;
@@ -149,6 +152,10 @@ namespace DropletApplet {
 			    popover.update_token(get_token(tokenfile));
 		    });
 
+            Idle.add(() => { 
+                watch_applet(uuid);
+                return false;});
+
         }
 
         private string get_token(string tokenfile) {
@@ -186,6 +193,39 @@ namespace DropletApplet {
 
         public override Gtk.Widget? get_settings_ui() {
             return new DropletSettings(this.get_applet_settings(uuid));
+        }
+
+        private bool find_applet(string find_uuid, string[] applet_list) {
+            // Search panel applets for the given uuid
+            for (int i = 0; i < applet_list.length; i++) {
+                if (applet_list[i] == find_uuid) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void watch_applet(string find_uuid) {
+            // Check if the applet is still on the panel and ends cleanly if not
+            string[] applets;
+            string soluspath = "com.solus-project.budgie-panel";
+            panel_settings = new GLib.Settings(soluspath);
+            string[] allpanels_list = panel_settings.get_strv("panels");
+            foreach (string p in allpanels_list) {
+                string panelpath = "/com/solus-project/budgie-panel/panels/".concat("{", p, "}/");
+                currpanelsubject_settings = new GLib.Settings.with_path(
+                    soluspath + ".panel", panelpath
+                );
+                applets = currpanelsubject_settings.get_strv("applets");
+                if (find_applet(find_uuid, applets)) {
+                     currpanelsubject_settings.changed["applets"].connect(() => {
+                        applets = currpanelsubject_settings.get_strv("applets");
+                        if (!find_applet(find_uuid, applets)) {
+                            popover.quit_scan();
+                        }
+                    });
+                }
+            }
         }
 
     }

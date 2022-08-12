@@ -16,12 +16,18 @@ namespace DropletPopover {
             grid.set_column_spacing(10);
 
             droplet_list.set_update_icon((Gtk.Image) relative_parent.get_child());
+            Gtk.ToggleButton button_lock = new Gtk.ToggleButton();
+            button_lock.set_label("Unlock Actions");
             Gtk.Button button_refresh = new Gtk.Button();
             button_refresh.set_label("Refresh");
             Gtk.Button button_start = new Gtk.Button();
             button_start.set_label("Start");
             Gtk.Button button_stop = new Gtk.Button();
             button_stop.set_label("Stop");
+            Gtk.Button button_copy = new Gtk.Button();
+            button_copy.set_label("Copy IP");
+            Gtk.Button button_reboot = new Gtk.Button();
+            button_reboot.set_label("Reboot");
             Gtk.Label label_spacer = new Gtk.Label("");
             label_spacer.set_width_chars(50);
             Gtk.Label label_status = new Gtk.Label(" ");
@@ -30,13 +36,20 @@ namespace DropletPopover {
             grid.attach(droplet_list,0,2,3,1);
             grid.attach(label_status,0,3,3,1);
             grid.attach(new Gtk.Separator(Gtk.Orientation.HORIZONTAL),0,4,3,1);
-            grid.attach(button_refresh,0,5,1,1);
-            grid.attach(button_start,1,5,1,1);
-            grid.attach(button_stop,2,5 ,1,1);
+            grid.attach(button_lock,0,5,1,1);
+            grid.attach(button_refresh,1,5,1,1);
+            grid.attach(button_copy,2,5,1,1);
+            grid.attach(button_start,0,6,1,1);
+            grid.attach(button_stop,1,6,1,1);
+            grid.attach(button_reboot,2,6,1,1);
             this.add((grid));
 
+            button_start.set_sensitive(button_lock.active);
+            button_stop.set_sensitive(button_lock.active);
+            button_reboot.set_sensitive(button_lock.active);
+
             button_stop.clicked.connect(() => {
-                if (droplet_list.has_selected()) {
+                if (droplet_list.has_selected() && droplet_list.selected_is_running()) {
                     droplet_list.add_stop();
                     label_status.set_text("Shutdown sent. This may take a minute to complete.");
                     Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
@@ -47,9 +60,20 @@ namespace DropletPopover {
             });
 
             button_start.clicked.connect(() => {
-                if (droplet_list.has_selected()) {
+                if (droplet_list.has_selected() && !droplet_list.selected_is_running()) {
                     droplet_list.add_start();
                     label_status.set_text("Startup sent. This may take a minute to complete.");
+                    Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
+                        label_status.set_text("");
+                        return false;
+                    });
+                }
+            });
+
+            button_reboot.clicked.connect(() => {
+                if (droplet_list.has_selected()) {
+                    droplet_list.add_reboot();
+                    label_status.set_text("Reboot sent. This may take a minute to complete.");
                     Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
                         label_status.set_text("");
                         return false;
@@ -64,6 +88,21 @@ namespace DropletPopover {
                     button_refresh.set_sensitive(true);
                     return false;
                 });
+            });
+
+            button_copy.clicked.connect (() => {
+                if (droplet_list.has_selected()) {
+                    Gdk.Display display = Gdk.Display.get_default ();
+                    Gtk.Clipboard clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
+                    string copy_ip = droplet_list.get_selected_ip();
+                    clipboard.set_text(copy_ip, copy_ip.length);
+                }
+            });
+
+            button_lock.toggled.connect (() => {
+                button_start.set_sensitive(button_lock.active);
+                button_stop.set_sensitive(button_lock.active);
+                button_reboot.set_sensitive(button_lock.active);
             });
 
             this.get_child().show_all();
@@ -82,6 +121,10 @@ namespace DropletPopover {
 
         public void update() {
             droplet_list.update();
+        }
+
+        public void quit_scan() {
+            droplet_list.quit_scan();
         }
     }
 
