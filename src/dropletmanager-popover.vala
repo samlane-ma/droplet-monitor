@@ -36,7 +36,7 @@ namespace DropletPopover {
             this.add((grid));
 
             button_stop.clicked.connect(() => {
-                if (droplet_list.has_selected() && droplet_list.is_selected_running()) {
+                if (droplet_list.has_selected()) {
                     droplet_list.add_stop();
                     label_status.set_text("Shutdown sent. This may take a minute to complete.");
                     Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
@@ -47,7 +47,7 @@ namespace DropletPopover {
             });
 
             button_start.clicked.connect(() => {
-                if (droplet_list.has_selected() && !droplet_list.is_selected_running()) {
+                if (droplet_list.has_selected()) {
                     droplet_list.add_start();
                     label_status.set_text("Startup sent. This may take a minute to complete.");
                     Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {

@@ -14,6 +14,8 @@ class DropletList: Gtk.ListBox {
     private Mutex mutex = Mutex();
     private Queue<string> start_queue;
     private Queue<string> stop_queue;
+    private string last_selected = "";
+    private bool is_selected = false;
 
     public DropletList(string token) {
         this.token = token;
@@ -22,6 +24,7 @@ class DropletList: Gtk.ListBox {
         placeholder = new Gtk.Label("  Searching for droplets  \n\n\n");
         this.set_placeholder(placeholder);
         placeholder.show();
+        this.row_selected.connect(update_selected);
         try {
             var thread = new Thread<void*>.try(null, get_all_droplets);
         } catch (Error thread_error) {
@@ -29,19 +32,28 @@ class DropletList: Gtk.ListBox {
         }
     }
 
+    private void update_selected(ListBoxRow? row) {
+        if (row != null) {
+            last_selected = droplets[row.get_index()].id;
+            is_selected = true;
+        }
+        else {
+            is_selected = false;
+        }
+    }
+        
+
     public void add_start () {
         if (is_empty()) return;
-        int current_selected = this.get_selected_row().get_index();
-        if (current_selected >= 0) {
-            start_queue.push_head(droplets[current_selected].id);
+        if (is_selected) {
+            start_queue.push_head(last_selected);
         }
     }
 
     public void add_stop () {
         if (is_empty()) return;
-        int current_selected = this.get_selected_row().get_index();
-        if (current_selected >= 0) {
-            stop_queue.push_head(droplets[current_selected].id);
+        if (is_selected) {
+            stop_queue.push_head(last_selected);
         }
     }
 
@@ -115,17 +127,9 @@ class DropletList: Gtk.ListBox {
 
     public bool has_selected() {
         if (is_empty()) return false;
+        if (this.get_selected_row() == null) return false;
         if (this.get_selected_row().get_index() >= 0) {
             return true;
-        }
-        return false;
-    }
-
-    public bool is_selected_running() {
-        if ( is_empty()) return false;
-        int current_selected = this.get_selected_row().get_index();
-        if (has_selected()) {
-            return (droplets[current_selected].status == "active");
         }
         return false;
     }
@@ -212,6 +216,7 @@ class DropletList: Gtk.ListBox {
             decay = 3;
             mutex.unlock();
         }
+    
     }
 
 } // end class
