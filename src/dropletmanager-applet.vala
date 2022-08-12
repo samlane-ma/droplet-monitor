@@ -106,7 +106,7 @@ namespace DropletApplet {
 
             token = get_token(tokenfile);
 
-            icon = new Gtk.Image.from_icon_name("do-server-ok-symbolic", Gtk.IconSize.MENU);
+            icon = new Gtk.Image.from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
             widget = new Gtk.EventBox();
             widget.add(icon);
             popover = new DropletPopover.DropletPopover(widget, token);
@@ -128,9 +128,12 @@ namespace DropletApplet {
             show_all();
 
             netmon = NetworkMonitor.get_default ();
-            netmon.network_changed.connect (() => {
-                popover.unselect_droplet();
-                popover.update();
+            Timeout.add_seconds_full(GLib.Priority.DEFAULT, 10, () => {
+                netmon.network_changed.connect (() => {
+                    popover.unselect_droplet();
+                    popover.update();
+                });
+                return false;
             });
 
 

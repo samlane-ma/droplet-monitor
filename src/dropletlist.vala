@@ -9,42 +9,104 @@ class DropletList: Gtk.ListBox {
     private string token;
     private Gtk.Label placeholder;
     private Gtk.Image icon;
+    private bool stay_running = true;
+    private int decay = 1;
+    private Mutex mutex = Mutex();
+    private Queue<string> start_queue;
+    private Queue<string> stop_queue;
 
     public DropletList(string token) {
         this.token = token;
+        start_queue = new Queue<string> ();
+        stop_queue = new Queue<string> ();
         placeholder = new Gtk.Label("  Searching for droplets  \n\n\n");
         this.set_placeholder(placeholder);
         placeholder.show();
-        update();
-        Timeout.add_seconds_full(GLib.Priority.DEFAULT, 300, () => {
-            update();
-            return true;
-        });
+        try {
+            var thread = new Thread<void*>.try(null, get_all_droplets);
+        } catch (Error thread_error) {
+            message("Could not start thread");
+        }
+    }
+
+    public void add_start () {
+        if (is_empty()) return;
+        int current_selected = this.get_selected_row().get_index();
+        if (current_selected >= 0) {
+            start_queue.push_head(droplets[current_selected].id);
+        }
+    }
+
+    public void add_stop () {
+        if (is_empty()) return;
+        int current_selected = this.get_selected_row().get_index();
+        if (current_selected >= 0) {
+            stop_queue.push_head(droplets[current_selected].id);
+        }
+    }
+
+    private void* get_all_droplets () {
+        string old_check = "";
+        string this_check = "";
+        int cycle = 0;
+        while (stay_running) {
+
+            // Check for stops
+            string item = null;
+            string[] stop_list = { };
+	        while ((item = stop_queue.pop_head ()) != null) {
+                if (!(item in stop_list)) {
+                    stop_list += item;
+                }
+            }
+            foreach (var selected_droplet in stop_list) {
+		        toggle_selected(selected_droplet, DOcean.OFF);
+            }
+
+            // Check for starts
+            item = null;
+            string[] start_list = { };
+	        while ((item = start_queue.pop_head ()) != null) {
+		        if (!(item in stop_list)) {
+                    start_list += item;
+                }
+            }
+            foreach (var selected_droplet in start_list) {
+		        toggle_selected(selected_droplet, DOcean.ON);
+            }
+
+            // Regular update
+            if (cycle > 20 || decay > 0) {
+                droplets = {};
+                try{
+                    droplets = DOcean.get_droplets(token);
+                } catch (Error e) {
+                    message ("Error: %s", e.message);
+                }    
+                this_check = "";
+                foreach (var droplet in droplets) {
+                    this_check += @"$(droplet.name)_$(droplet.status)_$(droplet.ipv4[0])_";
+                }
+                if (old_check != this_check) {
+                    Idle.add( () => {
+                        return update_gui(droplets);
+                    });
+                    old_check = this_check;
+                }
+                cycle = 0;
+                mutex.lock();
+                decay = (decay >0 ? decay - 1: 0);
+                mutex.unlock();
+            } else {
+                cycle++;
+            }
+            Thread.usleep(15000000);
+        }
+        return null;
     }
 
     public void set_update_icon(Gtk.Image icon) {
         this.icon = icon;
-    }
-
-    private async void get_droplet_list () {
-        new Thread<void*> (null, () => {
-            try {
-                this.droplets = DOcean.get_droplets(token);
-            } catch (Error e) {
-                this.droplets = {};
-                this.unselect_all();
-            }
-            Idle.add (get_droplet_list.callback);
-            return null;
-        });
-        yield;
-    }
-
-    public void update() {
-        get_droplet_list.begin ((obj, res) => {
-            get_droplet_list.end (res);
-            this.update_gui();
-        });
     }
 
     private bool is_empty() {
@@ -68,12 +130,18 @@ class DropletList: Gtk.ListBox {
         return false;
     }
 
+    public void update() {
+        mutex.lock();
+        decay = 4;
+        mutex.unlock();
+    }
+
     public void update_token(string new_token) {
         this.token = new_token;
         update();
     }
 
-    private bool update_gui () {
+    private bool update_gui (DODroplet[] droplet_list) {
 
         // Mostly prevents index error crashes and GLib asserion errors
         // but needs cleanup and simplification
@@ -94,7 +162,7 @@ class DropletList: Gtk.ListBox {
             }
         }
         if (current_selected >= 0 && !empty) {
-            selected = droplets[this.get_selected_row().get_index()].name;
+            selected = droplet_list[this.get_selected_row().get_index()].name;
         } else {
             this.unselect_all();
             selected = "";
@@ -102,7 +170,7 @@ class DropletList: Gtk.ListBox {
 
         this.foreach ((element) => this.remove (element));
         int found_count = 0;
-        foreach (var droplet in droplets) {
+        foreach (var droplet in droplet_list) {
             var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 20);
             var label = new Gtk.Label(droplet.name);
             Gtk.Image status_image = new Gtk.Image();
@@ -131,19 +199,18 @@ class DropletList: Gtk.ListBox {
         return false;
     }
 
-    public void toggle_selected (int method) {
+    public void toggle_selected (string selected_droplet, int method) {
         if (is_empty()) return;
         int current_selected = this.get_selected_row().get_index();
         if (current_selected >= 0) {
             try {
-                DOcean.power_droplet(token,droplets[current_selected], method);
+                DOcean.power_droplet(token, selected_droplet, method);
             } catch (Error e) {
                 message("Error accessing server: %s", e.message);
             }
-            Timeout.add_seconds_full(GLib.Priority.DEFAULT, 20, () => {
-                update();
-                return true;
-            });
+            mutex.lock();
+            decay = 3;
+            mutex.unlock();
         }
     }
 

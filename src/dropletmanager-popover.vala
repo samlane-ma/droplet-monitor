@@ -37,7 +37,7 @@ namespace DropletPopover {
 
             button_stop.clicked.connect(() => {
                 if (droplet_list.has_selected() && droplet_list.is_selected_running()) {
-                    droplet_list.toggle_selected(DOcean.OFF);
+                    droplet_list.add_stop();
                     label_status.set_text("Shutdown sent. This may take a minute to complete.");
                     Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
                         label_status.set_text("");
@@ -48,7 +48,7 @@ namespace DropletPopover {
 
             button_start.clicked.connect(() => {
                 if (droplet_list.has_selected() && !droplet_list.is_selected_running()) {
-                    droplet_list.toggle_selected(DOcean.ON);
+                    droplet_list.add_start();
                     label_status.set_text("Startup sent. This may take a minute to complete.");
                     Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
                         label_status.set_text("");
@@ -58,7 +58,12 @@ namespace DropletPopover {
             });
 
             button_refresh.clicked.connect(() => {
+                button_refresh.set_sensitive(false);
                 droplet_list.update();
+                Timeout.add_seconds_full(GLib.Priority.DEFAULT, 10, () => { 
+                    button_refresh.set_sensitive(true);
+                    return false;
+                });
             });
 
             this.get_child().show_all();

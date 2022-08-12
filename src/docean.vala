@@ -16,9 +16,10 @@ struct DODroplet {
     public string id;
 }
 
-void power_droplet(string token, DODroplet drop, int mode) throws Error {
+void power_droplet(string token, string droplet_id, int mode) throws Error {
     var session = new Soup.Session();
-    var message = new Soup.Message ("POST", @"https://api.digitalocean.com/v2/droplets/$(drop.id)/actions");
+    session.timeout = 5;
+    var message = new Soup.Message ("POST", @"https://api.digitalocean.com/v2/droplets/$droplet_id/actions");
     string mparams = "";
     if (mode == ON) {
         mparams = "{\"type\":\"power_on\"}";
@@ -46,6 +47,7 @@ DODroplet[] get_droplets (string token) throws Error {
     DODroplet[]droplet_list = {};
 
     var session = new Soup.Session();
+    session.timeout = 5;
     var message = new Soup.Message ("GET", "https://api.digitalocean.com/v2/droplets");
     message.request_headers.append ("Authorization", @"Bearer $token");
     session.send_message(message);
