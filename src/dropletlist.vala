@@ -205,9 +205,17 @@ class DropletList: Gtk.ListBox {
             var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 20);
             var name_label = new Gtk.Label(droplet.name);
             var ip_label = new Gtk.Label(droplet.public_ipv4);
-            string ip_tooltip = @"Private: $(droplet.private_ipv4)\nPublic: $(droplet.public_ipv4)\nFloating: $(droplet.floating_ip)\nIPv6: $(droplet.public_ipv6)";
+            string ip_tooltip = @"Private: $(droplet.private_ipv4)\nPublic: $(droplet.public_ipv4)\nFloating:" + 
+                                @" $(droplet.floating_ip)\nIPv6: $(droplet.public_ipv6)";
             ip_label.set_tooltip_text(ip_tooltip);
+            string info_tooltip = @"ID: $(droplet.id)\nLocation: $(droplet.location)\nImage name:"+
+                                  @" $(droplet.image_name)\nDistribution: $(droplet.image_distribution)\n" +
+                                  @"Description: $(droplet.image_description)\n Created: $(droplet.image_created)";
+            name_label.set_tooltip_text(info_tooltip);
+            string status_tooltip = @"vCPUs: $(droplet.size_vcpus)\nStorage: $(droplet.size_storage)GB\n" +
+                                    @"Memory: $(droplet.size_memory)GB\nMonthly: $$" + @"$(droplet.size_price_monthly)";
             Gtk.Image status_image = new Gtk.Image();
+            status_image.set_tooltip_text(status_tooltip);
             if (droplet.status == "active") {
                 running += droplet.id;
                 status_image.set_from_icon_name("do-server-online", Gtk.IconSize.MENU);

@@ -17,7 +17,7 @@ namespace DropletPopover {
 
             droplet_list.set_update_icon((Gtk.Image) relative_parent.get_child());
             Gtk.ToggleButton button_lock = new Gtk.ToggleButton();
-            button_lock.set_label("Unlock Actions");
+            button_lock.set_label("Actions");
             Gtk.Button button_refresh = new Gtk.Button();
             button_refresh.set_label("Refresh");
             Gtk.Button button_start = new Gtk.Button();
@@ -48,8 +48,8 @@ namespace DropletPopover {
             button_stop.set_sensitive(button_lock.active);
             button_reboot.set_sensitive(button_lock.active);
 
-            Gtk.Image lock_image = new Gtk.Image.from_icon_name("changes-prevent-symbolic.symbolic",Gtk.IconSize.LARGE_TOOLBAR);
-            Gtk.Image unlock_image = new Gtk.Image.from_icon_name("changes-allow-symbolic.symbolic",Gtk.IconSize.LARGE_TOOLBAR);
+            Gtk.Image lock_image = new Gtk.Image.from_icon_name("changes-prevent-symbolic.symbolic",Gtk.IconSize.MENU);
+            Gtk.Image unlock_image = new Gtk.Image.from_icon_name("changes-allow-symbolic.symbolic",Gtk.IconSize.MENU);
 
             button_lock.set_image(lock_image);
             button_lock.set_always_show_image(true);
@@ -120,7 +120,7 @@ namespace DropletPopover {
 
         }
 
-        // These are here to give parent access to certain
+        // These are here to give parent access to certain methods
 
         public void update_token (string new_token) {
             droplet_list.update_token(new_token);

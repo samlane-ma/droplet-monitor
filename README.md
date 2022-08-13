@@ -7,6 +7,10 @@
 
 Work in progress...
 
+[Image 1](/images/img1.png)
+
+[Image 2](/images/img2.png)
+
 Future plans:
 * Get more detailed information
 * allow launching SSH sessions to droplets
