@@ -210,9 +210,9 @@ class DropletList: Gtk.ListBox {
             Gtk.Image status_image = new Gtk.Image();
             if (droplet.status == "active") {
                 running += droplet.id;
-                status_image.set_from_icon_name("emblem-checked", Gtk.IconSize.LARGE_TOOLBAR);
+                status_image.set_from_icon_name("do-server-online", Gtk.IconSize.MENU);
             } else {
-                status_image.set_from_icon_name("emblem-error", Gtk.IconSize.LARGE_TOOLBAR);
+                status_image.set_from_icon_name("do-server-offline", Gtk.IconSize.MENU);
                 all_active = false;
             }
             hbox.pack_start(status_image, false, false, 5);

@@ -48,6 +48,12 @@ namespace DropletPopover {
             button_stop.set_sensitive(button_lock.active);
             button_reboot.set_sensitive(button_lock.active);
 
+            Gtk.Image lock_image = new Gtk.Image.from_icon_name("changes-prevent-symbolic.symbolic",Gtk.IconSize.LARGE_TOOLBAR);
+            Gtk.Image unlock_image = new Gtk.Image.from_icon_name("changes-allow-symbolic.symbolic",Gtk.IconSize.LARGE_TOOLBAR);
+
+            button_lock.set_image(lock_image);
+            button_lock.set_always_show_image(true);
+
             button_stop.clicked.connect(() => {
                 if (droplet_list.has_selected() && droplet_list.selected_is_running()) {
                     droplet_list.add_stop();
@@ -100,6 +106,11 @@ namespace DropletPopover {
             });
 
             button_lock.toggled.connect (() => {
+                if (button_lock.active) {
+                    button_lock.set_image(unlock_image);
+                } else {
+                    button_lock.set_image(lock_image);
+                }
                 button_start.set_sensitive(button_lock.active);
                 button_stop.set_sensitive(button_lock.active);
                 button_reboot.set_sensitive(button_lock.active);
