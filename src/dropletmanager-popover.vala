@@ -31,6 +31,7 @@ namespace DropletPopover {
             Gtk.Label label_spacer = new Gtk.Label("");
             label_spacer.set_width_chars(50);
             Gtk.Label label_status = new Gtk.Label(" ");
+
             grid.attach(label_spacer,0,0,3,1);
             grid.attach(new Gtk.Separator(Gtk.Orientation.HORIZONTAL),0,1,3,1);
             grid.attach(droplet_list,0,2,3,1);
@@ -42,11 +43,35 @@ namespace DropletPopover {
             grid.attach(button_start,0,6,1,1);
             grid.attach(button_stop,1,6,1,1);
             grid.attach(button_reboot,2,6,1,1);
+
+            Gtk.Box box_ssh = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 5);
+            Gtk.Button button_ssh = new Gtk.Button();
+            button_ssh.set_label("Open SSH");
+            Gtk.Entry entry_ssh = new Gtk.Entry();
+            entry_ssh.set_text("root");
+            entry_ssh.set_width_chars(15);
+            entry_ssh.set_alignment(1);
+            Gtk.Label label_at = new Gtk.Label("@");
+            Gtk.Label label_ssh = new Gtk.Label("");
+            label_ssh.set_justify(Gtk.Justification.LEFT);
+            box_ssh.pack_start(entry_ssh, false, false, 2);
+            box_ssh.pack_start(label_at, false, false, 2);
+            box_ssh.pack_start(label_ssh, false, true, 2);
+            box_ssh.pack_end(button_ssh, false, false, 2);
+            grid.attach(new Gtk.Label(""),0,7,3,1);
+            grid.attach(box_ssh,0,8,3,1);
+
             this.add((grid));
+
+            droplet_list.set_ssh_label(label_ssh);
 
             button_start.set_sensitive(button_lock.active);
             button_stop.set_sensitive(button_lock.active);
             button_reboot.set_sensitive(button_lock.active);
+            entry_ssh.set_sensitive(button_lock.active);
+            button_ssh.set_sensitive(button_lock.active);
+            label_at.set_sensitive(button_lock.active);
+            label_ssh.set_sensitive(button_lock.active);
 
             Gtk.Image lock_image = new Gtk.Image.from_icon_name("changes-prevent-symbolic.symbolic",Gtk.IconSize.MENU);
             Gtk.Image unlock_image = new Gtk.Image.from_icon_name("changes-allow-symbolic.symbolic",Gtk.IconSize.MENU);
@@ -114,10 +139,31 @@ namespace DropletPopover {
                 button_start.set_sensitive(button_lock.active);
                 button_stop.set_sensitive(button_lock.active);
                 button_reboot.set_sensitive(button_lock.active);
+                entry_ssh.set_sensitive(button_lock.active);
+                button_ssh.set_sensitive(button_lock.active);
+                label_at.set_sensitive(button_lock.active);
+                label_ssh.set_sensitive(button_lock.active);
+            });
+
+            button_ssh.clicked.connect(() => {
+                run_ssh(entry_ssh.get_text(), label_ssh.get_label());
             });
 
             this.get_child().show_all();
 
+        }
+
+        private void run_ssh(string user, string ip) {
+            string? terminal = Environment.find_program_in_path ("x-terminal-emulator");
+            if (terminal != null){
+                try {
+                    string dest = @"$user@$ip";
+                    string command = @"$terminal -e ssh $dest";
+                    Process.spawn_command_line_async(command);
+                } catch (Error e) {
+                    message ("Could not start terminal: %s", e.message);
+                }
+            }
         }
 
         // These are here to give parent access to certain methods

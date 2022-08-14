@@ -13,7 +13,6 @@ Work in progress...
 
 Future plans:
 * Get more detailed information
-* allow launching SSH sessions to droplets
 * more ?
 
 Dependencies

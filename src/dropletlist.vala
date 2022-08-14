@@ -18,6 +18,8 @@ class DropletList: Gtk.ListBox {
     private string[] running = {};
     private bool is_selected = false;
     private string last_selected = "";
+    private string last_ip = "";
+    private Gtk.Label? ssh_label = null;
 
     public DropletList(string token) {
         this.token = token;
@@ -35,10 +37,16 @@ class DropletList: Gtk.ListBox {
         }
     }
 
+    public void set_ssh_label(Gtk.Label label) {
+        ssh_label = label;
+    }
+
     private void update_selected(ListBoxRow? row) {
         if (row != null) {
             last_selected = droplets[row.get_index()].id;
+            last_ip = droplets[row.get_index()].public_ipv4;
             is_selected = true;
+            ssh_label.set_label(last_ip);
         }
         else {
             is_selected = false;
