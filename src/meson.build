@@ -14,6 +14,7 @@ dependency('budgie-1.0', version: '>=2'),
 dependency('gdk-3.0'),
 dependency('libpeas-gtk-1.0'),
 dependency('libsoup-2.4'),
+dependency('libsecret-1'),
 dependency('json-glib-1.0'),
 meson.get_compiler('c').find_library('m', required: false)
 ]

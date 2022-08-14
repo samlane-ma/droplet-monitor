@@ -10,11 +10,19 @@ class DropletList: Gtk.ListBox {
     private Gtk.Label placeholder;
     private Gtk.Image icon;
     private bool stay_running = true;
+
+    // thread will do full update every 20 passes - the decay is how many times
+    // it will do a full update every pass, in the case of a start/stop request
     private int decay = 1;
+
     private Mutex mutex = Mutex();
+
+    // use Queues for the list of items to start/stop/reboot
+    // then we can check if they get added multiple times and just run once
     private Queue<string> start_queue;
     private Queue<string> stop_queue;
     private Queue<string> reboot_queue;
+
     private string[] running = {};
     private bool is_selected = false;
     private string last_selected = "";
@@ -82,6 +90,11 @@ class DropletList: Gtk.ListBox {
         string old_check = "";
         string this_check = "";
         int cycle = 0;
+
+        // since token is loaded async from keyring, add a slight delay 
+        // before first cycle so token is loaded so it doesn't wait a cycle
+        Thread.usleep(500000);
+        
         while (stay_running) {
 
             // Check for stops
@@ -129,6 +142,9 @@ class DropletList: Gtk.ListBox {
                     message ("Error: %s", e.message);
                 }    
                 this_check = "";
+                
+                // form a string from the results and if the next check forms
+                // the same string, we know nothing has changed... 
                 foreach (var droplet in droplets) {
                     this_check += @"$(droplet.name)_$(droplet.status)_$(droplet.public_ipv4)_";
                 }
@@ -179,8 +195,11 @@ class DropletList: Gtk.ListBox {
     }
 
     private bool update_gui (DODroplet[] droplet_list) {
+        // Must be done from Idle so we don't crash the panel
 
         if (!stay_running) {
+            // if the app is removed before the callback (rare but possible)
+            // lets bail on the update
             return false;
         }
 
@@ -218,7 +237,7 @@ class DropletList: Gtk.ListBox {
             ip_label.set_tooltip_text(ip_tooltip);
             string info_tooltip = @"ID: $(droplet.id)\nLocation: $(droplet.location)\nImage name:"+
                                   @" $(droplet.image_name)\nDistribution: $(droplet.image_distribution)\n" +
-                                  @"Description: $(droplet.image_description)\n Created: $(droplet.image_created)";
+                                  @"Description: $(droplet.image_description)\nCreated: $(droplet.image_created)";
             name_label.set_tooltip_text(info_tooltip);
             string status_tooltip = @"vCPUs: $(droplet.size_vcpus)\nStorage: $(droplet.size_storage)GB\n" +
                                     @"Memory: $(droplet.size_memory)GB\nMonthly: $$" + @"$(droplet.size_price_monthly)";

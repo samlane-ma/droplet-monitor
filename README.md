@@ -11,6 +11,9 @@ Work in progress...
 
 ![Image 2](images/img2.png)
 
+The applet requires a token provided by Digital Ocean.
+The token will be stored in the gnome keyring, so if the keyring is not unlocked (i.e. if using auto-login) the applet will not work.
+
 Future plans:
 * Get more detailed information
 * more ?
@@ -23,6 +26,7 @@ Dependencies
 * libpeas-gtk-1.0
 * libsoup-2.4
 * json-glib-1.0
+* libsecret-1
 
 i.e. for Debian based distros
 

@@ -35,19 +35,39 @@ namespace DropletApplet {
         }
     }
 
+    public class DropletToken : Object {
+        public static DropletPopover.DropletPopover? app_popover;
+        public static string app_token;
+
+        public void set_popover (DropletPopover.DropletPopover popover) {
+            app_popover = popover;
+        }
+
+        public void update_token(string token) {
+            if (app_popover != null) {
+                app_token = token;
+                app_popover.update_token(app_token);
+            }
+        }
+    }
+
     public class DropletSettings : Gtk.Grid {
 
         GLib.Settings? settings;
 
-        private void on_update_clicked(string new_token) {
+        private void on_update_clicked(string new_token, DropletToken droplet_token) {
             if (new_token != "") {
-               set_token(new_token);
+                droplet_token.update_token(new_token);
+                set_token(new_token);
             }
         }
 
         public DropletSettings(GLib.Settings? settings) {
 
             this.settings = settings;
+
+            DropletToken droplet_token = new DropletToken();
+
             Gtk.Entry entry_token = new Gtk.Entry();
             Gtk.LinkButton link = new Gtk.LinkButton.with_label(
                 "https://docs.digitalocean.com/reference/api/create-personal-access-token/",
@@ -63,7 +83,7 @@ namespace DropletApplet {
             this.attach(button_update,0,3,1,1);
 
             button_update.clicked.connect(() => {
-                on_update_clicked(entry_token.get_text().strip());
+                on_update_clicked(entry_token.get_text().strip(), droplet_token);
                 entry_token.set_text("");
             });
 
@@ -71,14 +91,23 @@ namespace DropletApplet {
         }
 
         private void set_token(string new_token) {
-            try {
-                string tokendir = GLib.Environment.get_user_config_dir();
-                string tokenfile = GLib.Path.build_filename(tokendir, ".dotoken");
-                FileUtils.set_contents (tokenfile, new_token);
-
-            } catch (Error e) {
-                message("%s\n", e.message);
-            }
+            var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
+                        Secret.SchemaFlags.NONE, 
+                        "id", Secret.SchemaAttributeType.STRING,
+                        "number", Secret.SchemaAttributeType.INTEGER, 
+                        "even", Secret.SchemaAttributeType.BOOLEAN);
+            var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
+            attributes["id"] = "droplets";
+            attributes["number"] = "8";
+            attributes["even"] = "true";
+            Secret.password_storev.begin (droplet_schema, attributes, Secret.COLLECTION_DEFAULT,
+                                          "password", new_token, null, (obj, async_res) => {
+                try {
+                    Secret.password_store.end (async_res);
+                } catch (Error e) {
+                    message("Unable to store token in keyring: %s", e.message);
+                }                   
+            });
         }
 
     }
@@ -93,21 +122,23 @@ namespace DropletApplet {
         private DropletPopover.DropletPopover? popover = null;
         private unowned Budgie.PopoverManager? manager = null;
         private string token = "";
-        private string tokendir;
-        private string tokenfile;
-        private File file;
-        private FileMonitor monitor;
         private NetworkMonitor netmon;
+        private string? password;
 
         public string uuid { public set; public get; }
 
         public DropletApplet(string uuid) {
             Object(uuid: uuid);
 
-            tokendir = GLib.Environment.get_user_config_dir();
-            tokenfile = GLib.Path.build_filename(tokendir, ".dotoken");
-
-            token = get_token(tokenfile);
+            var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
+                                 Secret.SchemaFlags.NONE,
+                                 "id", Secret.SchemaAttributeType.STRING,
+                                 "number", Secret.SchemaAttributeType.INTEGER,
+                                 "even", Secret.SchemaAttributeType.BOOLEAN);
+            var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
+            attributes["id"] = "droplets";
+            attributes["number"] = "8";
+            attributes["even"] = "true";
 
             icon = new Gtk.Image.from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
             widget = new Gtk.EventBox();
@@ -127,8 +158,20 @@ namespace DropletApplet {
                 return Gdk.EVENT_STOP;
             });
 
-            popover.get_child().show_all();
-            show_all();
+            DropletToken droplet_token = new DropletToken();
+            droplet_token.set_popover(popover);
+            Secret.password_lookupv.begin (droplet_schema, attributes, null, (obj, async_res) => {
+                try {
+                    password = Secret.password_lookup.end (async_res);
+                    if (password == null) {
+                        password = "";
+                    }
+                } catch (Error e) {
+                    message("Unable to retrieve token from keyring: %s", e.message);
+                    password = "";
+                }
+                droplet_token.update_token(password);
+            });
 
             netmon = NetworkMonitor.get_default ();
             Timeout.add_seconds_full(GLib.Priority.DEFAULT, 10, () => {
@@ -139,45 +182,12 @@ namespace DropletApplet {
                 return false;
             });
 
-
-            try {
-                file = File.new_for_path (tokenfile);
-		        monitor = file.monitor (FileMonitorFlags.NONE, null);
-            } catch (Error e) {
-                message("Error: %s", e.message);
-            }
-
-		    monitor.changed.connect(() => {
-                popover.unselect_droplet();
-			    popover.update_token(get_token(tokenfile));
-		    });
+            popover.get_child().show_all();
+            show_all();
 
             Idle.add(() => { 
                 watch_applet(uuid);
                 return false;});
-
-        }
-
-        private string get_token(string tokenfile) {
-            string line = "";
-            File file = File.new_for_path (tokenfile);
-            if (!file.query_exists()) {
-                try {
-                    FileUtils.set_contents (tokenfile, "Enter token here");
-                } catch (Error e) {
-                    message("Error: %s\n", e.message);
-                }
-
-            } else {
-                try {
-		            FileInputStream @is = file.read ();
-		            DataInputStream dis = new DataInputStream (@is);
-		            line = dis.read_line().strip();
-	            } catch (Error e) {
-		            message("Error: %s\n", e.message);
-                }
-	        }
-	        return (line);
         }
 
         public override void update_popovers(Budgie.PopoverManager? manager) {
@@ -227,7 +237,6 @@ namespace DropletApplet {
                 }
             }
         }
-
     }
 }
 
