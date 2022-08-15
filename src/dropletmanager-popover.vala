@@ -6,6 +6,8 @@ namespace DropletPopover {
     public class DropletPopover : Budgie.Popover {
 
         private DropletList.DropletList droplet_list;
+         //widgets that lock/unlock
+        private Gtk.Widget[] action_widgets = {};
 
         public DropletPopover(Gtk.EventBox relative_parent, string token) {
             Object(relative_to: relative_parent);
@@ -17,32 +19,32 @@ namespace DropletPopover {
 
             droplet_list.set_update_icon((Gtk.Image) relative_parent.get_child());
             Gtk.ToggleButton button_lock = new Gtk.ToggleButton();
-            button_lock.set_label("Actions");
             Gtk.Button button_refresh = new Gtk.Button();
-            button_refresh.set_label("Refresh");
             Gtk.Button button_start = new Gtk.Button();
-            button_start.set_label("Start");
             Gtk.Button button_stop = new Gtk.Button();
-            button_stop.set_label("Stop");
             Gtk.Button button_copy = new Gtk.Button();
-            button_copy.set_label("Copy IP");
             Gtk.Button button_reboot = new Gtk.Button();
-            button_reboot.set_label("Reboot");
             Gtk.Label label_spacer = new Gtk.Label("");
             label_spacer.set_width_chars(50);
             Gtk.Label label_status = new Gtk.Label(" ");
+
+            string[,] button_labels = { { "Actions", "Refresh", "Copy IP" },
+                                        { "Start", "Stop", "Reboot"  } };
+            Gtk.Button[,] buttons = { { button_lock, button_refresh, button_copy },
+                                      { button_start, button_stop, button_reboot } };
 
             grid.attach(label_spacer,0,0,3,1);
             grid.attach(new Gtk.Separator(Gtk.Orientation.HORIZONTAL),0,1,3,1);
             grid.attach(droplet_list,0,2,3,1);
             grid.attach(label_status,0,3,3,1);
             grid.attach(new Gtk.Separator(Gtk.Orientation.HORIZONTAL),0,4,3,1);
-            grid.attach(button_lock,0,5,1,1);
-            grid.attach(button_refresh,1,5,1,1);
-            grid.attach(button_copy,2,5,1,1);
-            grid.attach(button_start,0,6,1,1);
-            grid.attach(button_stop,1,6,1,1);
-            grid.attach(button_reboot,2,6,1,1);
+
+            for (var row = 0; row < 2; row++) {
+                for (var col = 0; col < 3; col++) {
+                    buttons[row, col].set_label(button_labels[row,col]);
+                    grid.attach(buttons[row, col], col, row + 4, 1, 1);
+                }
+            }
 
             Gtk.Box box_ssh = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 5);
             Gtk.Button button_ssh = new Gtk.Button();
@@ -64,14 +66,11 @@ namespace DropletPopover {
             this.add((grid));
 
             droplet_list.set_ssh_label(label_ssh);
-
-            button_start.set_sensitive(button_lock.active);
-            button_stop.set_sensitive(button_lock.active);
-            button_reboot.set_sensitive(button_lock.active);
-            entry_ssh.set_sensitive(button_lock.active);
-            button_ssh.set_sensitive(button_lock.active);
-            label_at.set_sensitive(button_lock.active);
-            label_ssh.set_sensitive(button_lock.active);
+            action_widgets = { button_start, button_stop, button_reboot,
+                               entry_ssh, button_ssh, label_at, label_ssh };
+            foreach (Gtk.Widget w in action_widgets) {
+                w.set_sensitive(false);
+            }
 
             Gtk.Image lock_image = new Gtk.Image.from_icon_name("changes-prevent-symbolic.symbolic",Gtk.IconSize.MENU);
             Gtk.Image unlock_image = new Gtk.Image.from_icon_name("changes-allow-symbolic.symbolic",Gtk.IconSize.MENU);
@@ -80,36 +79,15 @@ namespace DropletPopover {
             button_lock.set_always_show_image(true);
 
             button_stop.clicked.connect(() => {
-                if (droplet_list.has_selected() && droplet_list.selected_is_running()) {
-                    droplet_list.add_stop();
-                    label_status.set_text("Shutdown sent. This may take a minute to complete.");
-                    Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
-                        label_status.set_text("");
-                        return false;
-                    });
-                }
+                send_action(DOcean.OFF, label_status);
             });
 
             button_start.clicked.connect(() => {
-                if (droplet_list.has_selected() && !droplet_list.selected_is_running()) {
-                    droplet_list.add_start();
-                    label_status.set_text("Startup sent. This may take a minute to complete.");
-                    Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
-                        label_status.set_text("");
-                        return false;
-                    });
-                }
+                send_action(DOcean.ON, label_status);
             });
 
             button_reboot.clicked.connect(() => {
-                if (droplet_list.has_selected()) {
-                    droplet_list.add_reboot();
-                    label_status.set_text("Reboot sent. This may take a minute to complete.");
-                    Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
-                        label_status.set_text("");
-                        return false;
-                    });
-                }
+                send_action(DOcean.REBOOT, label_status);
             });
 
             button_refresh.clicked.connect(() => {
@@ -136,13 +114,9 @@ namespace DropletPopover {
                 } else {
                     button_lock.set_image(lock_image);
                 }
-                button_start.set_sensitive(button_lock.active);
-                button_stop.set_sensitive(button_lock.active);
-                button_reboot.set_sensitive(button_lock.active);
-                entry_ssh.set_sensitive(button_lock.active);
-                button_ssh.set_sensitive(button_lock.active);
-                label_at.set_sensitive(button_lock.active);
-                label_ssh.set_sensitive(button_lock.active);
+                foreach (Gtk.Widget w in action_widgets) {
+                    w.set_sensitive(button_lock.active);
+                }
             });
 
             button_ssh.clicked.connect(() => {
@@ -151,6 +125,28 @@ namespace DropletPopover {
 
             this.get_child().show_all();
 
+        }
+
+        private void send_action (int action, Gtk.Label status) {
+            if (!droplet_list.has_selected()) return;
+            string action_name;
+            if (action == DOcean.OFF) {
+                if (!droplet_list.selected_is_running()) return;
+                droplet_list.add_stop();
+                action_name = "Shutdown";
+            } else if (action == DOcean.ON) {
+                if (droplet_list.selected_is_running()) return;
+                droplet_list.add_start();
+                action_name = "Startup";
+            } else {
+                droplet_list.add_reboot();
+                action_name = "Reboot";
+            }
+            status.set_text(@"$action_name sent. This may take a minute to complete.");
+            Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
+                status.set_text("");
+                return false;
+            });
         }
 
         private void run_ssh(string user, string ip) {

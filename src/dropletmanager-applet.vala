@@ -93,13 +93,9 @@ namespace DropletApplet {
         private void set_token(string new_token) {
             var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
                         Secret.SchemaFlags.NONE, 
-                        "id", Secret.SchemaAttributeType.STRING,
-                        "number", Secret.SchemaAttributeType.INTEGER, 
-                        "even", Secret.SchemaAttributeType.BOOLEAN);
+                        "id", Secret.SchemaAttributeType.STRING);
             var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
-            attributes["id"] = "droplets";
-            attributes["number"] = "8";
-            attributes["even"] = "true";
+            attributes["id"] = "droplet-oauth";
             Secret.password_storev.begin (droplet_schema, attributes, Secret.COLLECTION_DEFAULT,
                                           "password", new_token, null, (obj, async_res) => {
                 try {
@@ -132,13 +128,9 @@ namespace DropletApplet {
 
             var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
                                  Secret.SchemaFlags.NONE,
-                                 "id", Secret.SchemaAttributeType.STRING,
-                                 "number", Secret.SchemaAttributeType.INTEGER,
-                                 "even", Secret.SchemaAttributeType.BOOLEAN);
+                                 "id", Secret.SchemaAttributeType.STRING);
             var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
-            attributes["id"] = "droplets";
-            attributes["number"] = "8";
-            attributes["even"] = "true";
+            attributes["id"] = "droplet-oauth";
 
             icon = new Gtk.Image.from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
             widget = new Gtk.EventBox();

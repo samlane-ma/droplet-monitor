@@ -39,7 +39,7 @@ class DropletList: Gtk.ListBox {
         placeholder.show();
         this.row_selected.connect(update_selected);
         try {
-            var thread = new Thread<void*>.try(null, get_all_droplets);
+            new Thread<void*>.try(null, get_all_droplets);
         } catch (Error thread_error) {
             message("Could not start thread");
         }

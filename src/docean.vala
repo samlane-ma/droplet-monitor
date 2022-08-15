@@ -14,7 +14,7 @@ struct DODroplet {
     public string public_ipv4;
     public string public_ipv6;
     public string private_ipv4;
-    public string private_ipv6;
+    //public string private_ipv6;
     public string floating_ip;
     public string id;
     public string image_name;
@@ -24,7 +24,7 @@ struct DODroplet {
     public string size_vcpus;
     public string size_storage;
     public string size_memory;
-    public string size_slug;
+    //public string size_slug;
     public string size_price_monthly;
 }
 
@@ -130,7 +130,7 @@ DODroplet[] get_droplets (string token) throws Error {
             public_ipv4 = ipv4,
             public_ipv6 = ipv6,
             private_ipv4 = priv_ipv4,
-            private_ipv6 = priv_ipv6,
+            //private_ipv6 = priv_ipv6,
             floating_ip = drop_floating_ip,
             status = drop.get_string_member("status"),
             location = regioninfo.get_string_member("name"),
@@ -141,7 +141,7 @@ DODroplet[] get_droplets (string token) throws Error {
             size_vcpus = sizeinfo.get_int_member("vcpus").to_string(),
             size_storage = sizeinfo.get_int_member("disk").to_string(),
             size_memory = sizeinfo.get_int_member("memory").to_string(),
-            size_slug = sizeinfo.get_string_member("slug"),
+            //size_slug = sizeinfo.get_string_member("slug"),
             size_price_monthly = sizeinfo.get_int_member("price_monthly").to_string()
         };
 
