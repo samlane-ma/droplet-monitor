@@ -204,28 +204,8 @@ class DropletList: Gtk.ListBox {
             return false;
         }
 
-        int current_selected = -1;
-        string selected;
         bool all_active = true;
-        bool empty = false;
         running = {};
-
-        if (is_empty()) {
-            this.unselect_all();
-            empty = true;
-        } else {
-            if (this.get_selected_row() == null) {
-                current_selected = -1;
-            } else {
-                current_selected = this.get_selected_row().get_index();
-            }
-        }
-        if (current_selected >= 0 && !empty && droplet_list.length > 0) {
-            selected = droplet_list[this.get_selected_row().get_index()].name;
-        } else {
-            this.unselect_all();
-            selected = "";
-        }
 
         this.foreach ((element) => this.remove (element));
         int found_count = 0;
@@ -255,12 +235,13 @@ class DropletList: Gtk.ListBox {
             hbox.pack_start(name_label, false, false, 5);
             hbox.pack_end(ip_label, false, false, 5);
             this.insert(hbox, -1);
-            if (selected == droplet.name && !empty) {
+            if (last_selected == droplet.id) {
                 this.select_row(this.get_row_at_index(found_count));
             }
             found_count++;
         }
         if (found_count == 0) {
+            last_selected = "";
             icon.set_from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
         } else if (all_active) {
             icon.set_from_icon_name("do-server-ok-symbolic", Gtk.IconSize.MENU);
