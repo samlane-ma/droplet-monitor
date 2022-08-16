@@ -29,6 +29,8 @@ struct DODroplet {
 }
 
 void power_droplet(string token, string droplet_id, int mode) throws Error {
+    // sends the signal to the specific droplet ID to start / stop / rebooot
+
     var session = new Soup.Session();
     session.timeout = 5;
     var message = new Soup.Message ("POST", @"https://api.digitalocean.com/v2/droplets/$droplet_id/actions");
@@ -55,6 +57,7 @@ void power_droplet(string token, string droplet_id, int mode) throws Error {
 }
 
 DODroplet[] get_droplets (string token) throws Error {
+    // gets the current list of droplets and parses it into an array of DODroplets
    
     DODroplet[]droplet_list = {};
 

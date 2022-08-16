@@ -68,7 +68,8 @@ class DropletList: Gtk.ListBox {
             is_selected = false;
         }
     }
-        
+
+    // these allow parent class to add actions
     public void add_start () {
         if (is_empty()) return;
         if (is_selected) {
@@ -91,13 +92,21 @@ class DropletList: Gtk.ListBox {
     }
 
     public void quit_scan() {
+        // stop thread when applet is removed
         stay_running = false;
     }
 
     private void* get_all_droplets () {
-        string old_check = "";
-        string this_check = "";
-        int cycle = 0;
+        
+        string old_check = "";   // data returned from previous GET
+        string this_check = "";  // current GET request
+        int cycle = 0;           // current pass
+        // Thread will 
+        //  1: process stops added to the queues
+        //  2: process starts added to the queue
+        //  3: process reboots added to the queue
+        //  4: do a full check if its been 20 cycles or if decay has been added
+        //     to check more frequently after a change (start, stop,reboot)
 
         // since token is loaded async from keyring, add a slight delay 
         // before first cycle so token is loaded so it doesn't wait a cycle
@@ -141,11 +150,12 @@ class DropletList: Gtk.ListBox {
 		        toggle_selected(selected_droplet, DOcean.REBOOT);
             }
 
-            // Regular update
+            // Regular update if correct cycle or if extra checks needed
             if (cycle > 20 || decay > 0) {
                 droplets = {};
                 try{
                     mutex.lock();
+                    // request updated droplet list from D.O.
                     droplets = DOcean.get_droplets(token);
                 } catch (Error e) {
                     message ("Error: %s", e.message);
@@ -178,14 +188,17 @@ class DropletList: Gtk.ListBox {
     }
 
     public void set_update_icon(Gtk.Image icon) {
+        // sets the applet panel icon
         this.icon = icon;
     }
 
     private bool is_empty() {
+        // returns true if this ListBox is empty
         return (this.get_children() == null);
     }
 
     public bool has_selected() {
+        // returns true if this ListBox has a selected row
         if (is_empty()) return false;
         if (this.get_selected_row() == null) return false;
         if (this.get_selected_row().get_index() >= 0) {
@@ -195,12 +208,14 @@ class DropletList: Gtk.ListBox {
     }
 
     public void update() {
+        // adds the decay (extra checks) after an action (start, stop, reboot)
         mutex.lock();
         decay = 4;
         mutex.unlock();
     }
 
     public void update_token(string new_token) {
+        // allows parent class to update the D.O. oauth token
         this.token = new_token;
         update();
     }
@@ -220,6 +235,7 @@ class DropletList: Gtk.ListBox {
         this.foreach ((element) => this.remove (element));
         int found_count = 0;
         foreach (var droplet in droplet_list) {
+            // forms the ListBox
             var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 20);
             var name_label = new Gtk.Label(droplet.name);
             var ip_label = new Gtk.Label(droplet.public_ipv4);
@@ -250,6 +266,8 @@ class DropletList: Gtk.ListBox {
             }
             found_count++;
         }
+
+        // choose the correct panel icon
         if (found_count == 0) {
             last_selected = "";
             icon.set_from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
@@ -272,10 +290,12 @@ class DropletList: Gtk.ListBox {
     }
 
     public bool selected_is_running() {
+        // checks if selection is running so we don't send unneeded signals
         return (last_selected in running);
     }
 
     public void toggle_selected (string selected_droplet, int method) {
+        // sends the action to the selected droplet
         if (is_empty()) return;
         int current_selected = this.get_selected_row().get_index();
         if (current_selected >= 0) {

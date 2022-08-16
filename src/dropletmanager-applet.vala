@@ -36,6 +36,9 @@ namespace DropletApplet {
     }
 
     public class DropletToken : Object {
+        // this allows Budgie Desktop settings to update the token
+        // of an already running applet
+
         public static DropletPopover.DropletPopover? app_popover;
         public static string app_token;
 
@@ -91,6 +94,7 @@ namespace DropletApplet {
         }
 
         private void set_token(string new_token) {
+            // changes the token in the "Secret Service"
             var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
                         Secret.SchemaFlags.NONE, 
                         "id", Secret.SchemaAttributeType.STRING);
@@ -150,6 +154,8 @@ namespace DropletApplet {
                 return Gdk.EVENT_STOP;
             });
 
+            // set up the DropletToken class because Budgie Desktop Settings
+            // needs it to update the token if applet is running
             DropletToken droplet_token = new DropletToken();
             droplet_token.set_popover(popover);
             Secret.password_lookupv.begin (droplet_schema, attributes, null, (obj, async_res) => {
@@ -165,6 +171,8 @@ namespace DropletApplet {
                 droplet_token.update_token(password);
             });
 
+            // Monitors if the network changes (i.e connects or disconnects)
+            // to update the droplet list quicker
             netmon = NetworkMonitor.get_default ();
             Timeout.add_seconds_full(GLib.Priority.DEFAULT, 10, () => {
                 netmon.network_changed.connect (() => {
@@ -178,6 +186,7 @@ namespace DropletApplet {
             show_all();
 
             Idle.add(() => { 
+                // watch_applet will monitor if the applet is removed
                 watch_applet(uuid);
                 return false;});
         }
@@ -188,8 +197,6 @@ namespace DropletApplet {
         }
 
         public override bool supports_settings() {
-            // Return true if settings should be in Budgie Desktop Settings
-            // Return false if there are no settings
             return true;
         }
 

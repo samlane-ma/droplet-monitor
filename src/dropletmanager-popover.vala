@@ -117,6 +117,11 @@ namespace DropletPopover {
                 }
             });
 
+            label_ssh.notify.connect(() => {
+                foreach (Gtk.Widget w in action_widgets) {
+                w.set_sensitive((label_ssh.get_label() != "") && button_lock.active);}
+            });
+
             entry_ssh.activate.connect(button_ssh.clicked);
 
             button_ssh.clicked.connect(() => {
