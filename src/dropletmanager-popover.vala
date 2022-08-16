@@ -119,8 +119,12 @@ namespace DropletPopover {
                 }
             });
 
+            entry_ssh.activate.connect(button_ssh.clicked);
+
             button_ssh.clicked.connect(() => {
-                run_ssh(entry_ssh.get_text(), label_ssh.get_label());
+                if (label_ssh.get_text() != "") {
+                    run_ssh(entry_ssh.get_text(), label_ssh.get_label());
+                }
             });
 
             this.get_child().show_all();
@@ -129,20 +133,21 @@ namespace DropletPopover {
 
         private void send_action (int action, Gtk.Label status) {
             if (!droplet_list.has_selected()) return;
-            string action_name;
-            if (action == DOcean.OFF) {
-                if (!droplet_list.selected_is_running()) return;
-                droplet_list.add_stop();
-                action_name = "Shutdown";
-            } else if (action == DOcean.ON) {
-                if (droplet_list.selected_is_running()) return;
-                droplet_list.add_start();
-                action_name = "Startup";
-            } else {
-                droplet_list.add_reboot();
-                action_name = "Reboot";
+            string[] action_name = {"Shutdown", "Startup", "Reboot"};
+            switch (action) {
+                case DOcean.OFF :
+                    if (!droplet_list.selected_is_running()) return;
+                    droplet_list.add_stop();
+                    break;
+                case DOcean.ON :
+                    if (droplet_list.selected_is_running()) return;
+                    droplet_list.add_start();
+                    break;
+                case DOcean.REBOOT :
+                    droplet_list.add_reboot();
+                    break;
             }
-            status.set_text(@"$action_name sent. This may take a minute to complete.");
+            status.set_text(@"$(action_name[action]) sent. This may take a minute to complete.");
             Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
                 status.set_text("");
                 return false;
@@ -153,8 +158,7 @@ namespace DropletPopover {
             string? terminal = Environment.find_program_in_path ("x-terminal-emulator");
             if (terminal != null){
                 try {
-                    string dest = @"$user@$ip";
-                    string command = @"$terminal -e ssh $dest";
+                    string command = @"$terminal -e ssh $user@$ip";
                     Process.spawn_command_line_async(command);
                 } catch (Error e) {
                     message ("Could not start terminal: %s", e.message);

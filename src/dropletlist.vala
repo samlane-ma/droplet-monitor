@@ -57,6 +57,7 @@ class DropletList: Gtk.ListBox {
             ssh_label.set_label(last_ip);
         }
         else {
+            ssh_label.set_label("");
             is_selected = false;
         }
     }
