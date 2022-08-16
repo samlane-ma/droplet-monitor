@@ -219,7 +219,7 @@ class DropletList: Gtk.ListBox {
                 current_selected = this.get_selected_row().get_index();
             }
         }
-        if (current_selected >= 0 && !empty) {
+        if (current_selected >= 0 && !empty && droplet_list.length > 0) {
             selected = droplet_list[this.get_selected_row().get_index()].name;
         } else {
             this.unselect_all();
