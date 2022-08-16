@@ -51,8 +51,15 @@ class DropletList: Gtk.ListBox {
 
     private void update_selected(ListBoxRow? row) {
         if (row != null) {
+            mutex.lock();
+            if (droplets.length == 0) { 
+                // Should never occur but just in case droplet list is empty
+                // lets not crash the panel
+                mutex.unlock();
+                return; }
             last_selected = droplets[row.get_index()].id;
             last_ip = droplets[row.get_index()].public_ipv4;
+            mutex.unlock();
             is_selected = true;
             ssh_label.set_label(last_ip);
         }
@@ -138,10 +145,13 @@ class DropletList: Gtk.ListBox {
             if (cycle > 20 || decay > 0) {
                 droplets = {};
                 try{
+                    mutex.lock();
                     droplets = DOcean.get_droplets(token);
                 } catch (Error e) {
                     message ("Error: %s", e.message);
-                }    
+                } finally {
+                    mutex.unlock();
+                }
                 this_check = "";
                 
                 // form a string from the results and if the next check forms

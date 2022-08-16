@@ -42,7 +42,7 @@ namespace DropletPopover {
             for (var row = 0; row < 2; row++) {
                 for (var col = 0; col < 3; col++) {
                     buttons[row, col].set_label(button_labels[row,col]);
-                    grid.attach(buttons[row, col], col, row + 4, 1, 1);
+                    grid.attach(buttons[row, col], col, row + 5, 1, 1);
                 }
             }
 
@@ -62,7 +62,6 @@ namespace DropletPopover {
             box_ssh.pack_end(button_ssh, false, false, 2);
             grid.attach(new Gtk.Label(""),0,7,3,1);
             grid.attach(box_ssh,0,8,3,1);
-
             this.add((grid));
 
             droplet_list.set_ssh_label(label_ssh);
@@ -74,7 +73,6 @@ namespace DropletPopover {
 
             Gtk.Image lock_image = new Gtk.Image.from_icon_name("changes-prevent-symbolic.symbolic",Gtk.IconSize.MENU);
             Gtk.Image unlock_image = new Gtk.Image.from_icon_name("changes-allow-symbolic.symbolic",Gtk.IconSize.MENU);
-
             button_lock.set_image(lock_image);
             button_lock.set_always_show_image(true);
 
@@ -126,9 +124,7 @@ namespace DropletPopover {
                     run_ssh(entry_ssh.get_text(), label_ssh.get_label());
                 }
             });
-
             this.get_child().show_all();
-
         }
 
         private void send_action (int action, Gtk.Label status) {
