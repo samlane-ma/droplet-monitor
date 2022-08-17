@@ -52,9 +52,9 @@ class DropletList: Gtk.ListBox {
     private void update_selected(ListBoxRow? row) {
         if (row != null) {
             mutex.lock();
-            if (droplets.length == 0) { 
-                // Should never occur but just in case droplet list is empty
-                // lets not crash the panel
+            // if thread clears / reduces droplet list count, we need to make
+            // sure we don't crash by selecting an index that no longer exists
+            if (droplets.length < row.get_index()) { 
                 mutex.unlock();
                 return; }
             last_selected = droplets[row.get_index()].id;
@@ -154,16 +154,16 @@ class DropletList: Gtk.ListBox {
             if (cycle > 20 || decay > 0) {
                 droplets = {};
                 try{
-                    mutex.lock();
                     // request updated droplet list from D.O.
-                    droplets = DOcean.get_droplets(token);
+                    var droplet_check = DOcean.get_droplets(token);
+                    mutex.lock();
+                    droplets = droplet_check;
+                    mutex.unlock();
                 } catch (Error e) {
                     message ("Error: %s", e.message);
-                } finally {
-                    mutex.unlock();
                 }
-                this_check = "";
-                
+
+                this_check = "";   
                 // form a string from the results and if the next check forms
                 // the same string, we know nothing has changed... 
                 foreach (var droplet in droplets) {
