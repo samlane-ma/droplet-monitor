@@ -118,6 +118,7 @@ namespace DropletPopover {
             });
 
             label_ssh.notify.connect(() => {
+                // If there is no droplet selected, disable actions
                 foreach (Gtk.Widget w in action_widgets) {
                 w.set_sensitive((label_ssh.get_label() != "") && button_lock.active);}
             });
@@ -159,6 +160,9 @@ namespace DropletPopover {
             string? terminal = Environment.find_program_in_path ("x-terminal-emulator");
             if (terminal != null){
                 try {
+                    // hide the popover - this allows the SSH terminal to grab focus and is more
+                    // intuitive than manually closing the popup and switching to the terminal
+                    this.hide();
                     string command = @"$terminal -e ssh $user@$ip";
                     Process.spawn_command_line_async(command);
                 } catch (Error e) {

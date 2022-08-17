@@ -5,18 +5,12 @@
 ### This applet is not associated in any way with DigitalOcean, LLC
 ### This applet will allow you to see the status of, start, and stop droplets
 
-Work in progress...
-
 ![Image 1](images/img1.png)
 
 ![Image 2](images/img2.png)
 
 The applet requires a token provided by Digital Ocean.
 The token will be stored in the gnome keyring, so if the keyring is not unlocked (i.e. if using auto-login) the applet will not work.
-
-Future plans:
-* Get more detailed information
-* more ?
 
 Dependencies
 
@@ -42,4 +36,5 @@ To install (for Debian/Ubuntu):
 
 This will:
 * install plugin files to the Budgie Desktop plugins folder
+
 
