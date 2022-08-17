@@ -54,7 +54,7 @@ class DropletList: Gtk.ListBox {
             mutex.lock();
             // if thread clears / reduces droplet list count, we need to make
             // sure we don't crash by selecting an index that no longer exists
-            if (droplets.length < row.get_index()) { 
+            if (droplets.length < (row.get_index()+1)) { 
                 mutex.unlock();
                 return; }
             last_selected = droplets[row.get_index()].id;
