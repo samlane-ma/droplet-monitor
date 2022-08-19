@@ -13,7 +13,7 @@ class DropletList: Gtk.ListBox {
 
     // thread will do full update every 20 passes - the decay is how many times
     // it will do a full update every pass, in the case of a start/stop request
-    private int decay = 1;
+    private int decay = 2;
 
     private Mutex mutex = Mutex();
 
@@ -101,14 +101,20 @@ class DropletList: Gtk.ListBox {
         string old_check = "";   // data returned from previous GET
         string this_check = "";  // current GET request
         int cycle = 0;           // current pass
-        // Thread will 
-        //  1: process stops added to the queues
-        //  2: process starts added to the queue
-        //  3: process reboots added to the queue
-        //  4: do a full check if its been 20 cycles or if decay has been added
-        //     to check more frequently after a change (start, stop,reboot)
 
-        // since token is loaded async from keyring, add a slight delay 
+        /*
+        Thread will
+          1: process stops added to the queues
+          2: process starts added to the queue
+          3: process reboots added to the queue
+          4: do a full check if its been 15 cycles or if decay has been added
+             to check more frequently after a change (start, stop,reboot)
+
+         One cycle is approx. 18 seconds.
+         A full check happens roughly every 4.5 minutes.
+        */
+
+        // Since token is loaded async from keyring, add a slight delay 
         // before first cycle so token is loaded so it doesn't wait a cycle
         Thread.usleep(500000);
         
@@ -150,8 +156,12 @@ class DropletList: Gtk.ListBox {
 		        toggle_selected(selected_droplet, DOcean.REBOOT);
             }
 
+            if (stop_list.length + start_list.length + reboot_list.length > 0) {
+                decay = 4;
+            }
+
             // Regular update if correct cycle or if extra checks needed
-            if (cycle > 20 || decay > 0) {
+            if (cycle > 15 || decay > 0) {
                 droplets = {};
                 try{
                     // request updated droplet list from D.O.
@@ -208,7 +218,8 @@ class DropletList: Gtk.ListBox {
     }
 
     public void update() {
-        // adds the decay (extra checks) after an action (start, stop, reboot)
+        // allows parent class to trigger extra updates for 4 loops, in case of
+        // an event such as Refresh button pressed or network changed
         mutex.lock();
         decay = 4;
         mutex.unlock();
@@ -304,11 +315,7 @@ class DropletList: Gtk.ListBox {
             } catch (Error e) {
                 message("Error accessing server: %s", e.message);
             }
-            mutex.lock();
-            decay = 3;
-            mutex.unlock();
         }
-    
     }
 
 } // end class

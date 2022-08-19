@@ -174,11 +174,8 @@ namespace DropletApplet {
             // Monitors if the network changes (i.e connects or disconnects)
             // to update the droplet list quicker
             netmon = NetworkMonitor.get_default ();
-            Timeout.add_seconds_full(GLib.Priority.DEFAULT, 10, () => {
-                netmon.network_changed.connect (() => {
-                    popover.unselect_droplet();
-                    popover.update();
-                });
+            Timeout.add_seconds_full(GLib.Priority.DEFAULT, 2, () => {
+                netmon.network_changed.connect (popover.update_network);
                 return false;
             });
 

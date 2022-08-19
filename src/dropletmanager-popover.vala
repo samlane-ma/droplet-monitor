@@ -177,11 +177,8 @@ namespace DropletPopover {
             droplet_list.update_token(new_token);
         }
 
-        public void unselect_droplet() {
+        public void update_network() {
             droplet_list.unselect_all();
-        }
-
-        public void update() {
             droplet_list.update();
         }
 
