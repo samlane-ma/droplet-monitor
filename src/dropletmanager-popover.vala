@@ -157,17 +157,22 @@ namespace DropletPopover {
         }
 
         private void run_ssh(string user, string ip) {
+            this.hide();
+            // if on Debian based distros we can open the users preferred terminal, else
+            // we will let GLib pick a terminal with its own preferred order
             string? terminal = Environment.find_program_in_path ("x-terminal-emulator");
-            if (terminal != null){
-                try {
-                    // hide the popover - this allows the SSH terminal to grab focus and is more
-                    // intuitive than manually closing the popup and switching to the terminal
-                    this.hide();
-                    string command = @"$terminal -e ssh $user@$ip";
-                    Process.spawn_command_line_async(command);
-                } catch (Error e) {
-                    message ("Could not start terminal: %s", e.message);
+            try {
+                AppInfo appinfo;
+                if (terminal != null) {
+                    appinfo = AppInfo.create_from_commandline(@"$terminal -e ssh $user@$ip", terminal,
+                                                                   AppInfoCreateFlags.NONE);
+                } else {
+                    appinfo = AppInfo.create_from_commandline(@"ssh $user@$ip", "ssh",
+                                                                  AppInfoCreateFlags.NEEDS_TERMINAL);
                 }
+                appinfo.launch(null, null);
+            } catch (Error e) {
+                warning ("Error launching ssh: %s", e.message);
             }
         }
 

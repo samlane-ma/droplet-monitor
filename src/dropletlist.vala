@@ -13,7 +13,7 @@ class DropletList: Gtk.ListBox {
 
     // thread will do full update every 20 passes - the decay is how many times
     // it will do a full update every pass, in the case of a start/stop request
-    private int decay = 2;
+    private int decay = 3;
 
     private Mutex mutex = Mutex();
 
