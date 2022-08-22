@@ -11,6 +11,9 @@
 
 The applet requires a token provided by Digital Ocean.
 The token will be stored in the gnome keyring, so if the keyring is not unlocked (i.e. if using auto-login) the applet will not work.
+A token with "Write" scope is needed to start/stop/reboot droplets.
+
+[How to obtain your Digital Ocean Token](https://docs.digitalocean.com/reference/api/create-personal-access-token/)
 
 Dependencies
 
