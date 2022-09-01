@@ -126,7 +126,7 @@ namespace DropletPopover {
             entry_ssh.activate.connect(button_ssh.clicked);
 
             button_ssh.clicked.connect(() => {
-                if (label_ssh.get_text() != "") {
+                if (label_ssh.get_text() != "" && droplet_list.selected_is_running()) {
                     run_ssh(entry_ssh.get_text(), label_ssh.get_label());
                 }
             });
