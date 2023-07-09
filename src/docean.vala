@@ -1,4 +1,4 @@
-using Soup;
+using Curl;
 using Json;
 
 namespace DOcean {
@@ -31,9 +31,6 @@ struct DODroplet {
 void power_droplet(string token, string droplet_id, int mode) throws Error {
     // sends the signal to the specific droplet ID to start / stop / rebooot
 
-    var session = new Soup.Session();
-    session.timeout = 5;
-    var message = new Soup.Message ("POST", @"https://api.digitalocean.com/v2/droplets/$droplet_id/actions");
     string mparams = "";
     if (mode == ON) {
         mparams = "{\"type\":\"power_on\"}";
@@ -42,16 +39,35 @@ void power_droplet(string token, string droplet_id, int mode) throws Error {
     } else if (mode == REBOOT) {
         mparams = "{\"type\":\"reboot\"}";
     }
-    Soup.MemoryUse buffer = Soup.MemoryUse.STATIC; 
-    message.set_request("application/json", buffer, mparams.data);
-    message.request_headers.append("Content-Type","application/json");
-    message.request_headers.append ("Authorization", @"Bearer $token");
-    session.send_message(message);
-    if (message.response_body.data == null) {
+
+    var curl = new Curl.Easy();
+    curl.set_url(@"https://api.digitalocean.com/v2/droplets/$droplet_id/actions");
+    curl.set_header({ "Content-Type: application/json",
+                      @"Authorization: Bearer $token" });
+    curl.set_post(mparams);
+
+    var istream = new DataInputStream(curl.get_input_stream());
+    try {
+        curl.perform();
+    } catch(Curl.CurlError e) {
+        message("Error: %s\n", e.message);
+    }
+
+    string? result = null;
+    string line;
+    try {
+        while((line = istream.read_line()) != null) {
+            result = line;
+        }
+    } catch(GLib.IOError e) {
+        message("Error: %s\n", e.message);
+    }
+
+    if (result == null) {
         throw new Error(Quark.from_string ("DROPLETS"), 30, "Cannot Reach Server");
-    } else if ("could not be found." in ((string)message.response_body.data)) {
+    } else if ("could not be found." in result) {
         throw new Error(Quark.from_string ("DROPLETS"), 50, "Could not perform requested action");
-    } else if ("Unable to authenticate you" in ((string)message.response_body.data)) {
+    } else if ("Unable to authenticate you" in result) {
         throw new Error(Quark.from_string ("DROPLETS"), 20, "Unable to authenticate you");
     }
 }
@@ -61,22 +77,36 @@ DODroplet[] get_droplets (string token) throws Error {
    
     DODroplet[]droplet_list = {};
 
-    var session = new Soup.Session();
-    session.timeout = 5;
-    var message = new Soup.Message ("GET", "https://api.digitalocean.com/v2/droplets");
-    message.request_headers.append ("Authorization", @"Bearer $token");
-    session.send_message(message);
+    var curl = new Curl.Easy();
+
+    curl.set_url("https:/api.digitalocean.com/v2/droplets");
+    curl.set_header({ @"Authorization: Bearer $token" });
+    var istream = new DataInputStream(curl.get_input_stream());
+        try {
+        curl.perform();
+    } catch(Curl.CurlError e) {
+        message("Error: %s\n", e.message);
+    }
+    string line;
+    string? result = null;
+    try {
+        while((line = istream.read_line()) != null) {
+            result = line;
+        }
+    } catch(GLib.IOError e) {
+        message("Error: %s\n", e.message);
+    }
    
-    if (message.response_body.data == null) { 
+    if (result == null) { 
         throw new Error(Quark.from_string ("DROPLETS"), 30, "Cannot Reach Server");
     }
    
-    if ((string) message.response_body.data == "{\"id\": \"Unauthorized\", \"message\": \"Unable to authenticate you\" }") {
+    if (result == "{\"id\": \"Unauthorized\", \"message\": \"Unable to authenticate you\" }") {
         throw new Error(Quark.from_string ("DROPLETS"), 20, "Unable to authenticate you");
     }
 
     var parser = new Json.Parser ();
-    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
+    parser.load_from_data (result, -1); 
     var root_object = parser.get_root ().get_object ();
     var response = root_object.get_array_member ("droplets");
     if (response == null) {

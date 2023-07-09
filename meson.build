@@ -4,6 +4,8 @@ project('droplet-manager',
         meson_version: '>=0.40.0',
         license: 'GPL3')
 
+VAPI_DIR = join_paths(meson.source_root(), 'vapi')
+
 # Global path variable
 prefix = get_option('prefix')
 libdir = join_paths(prefix, get_option('libdir'))
