@@ -1,0 +1,5 @@
+droplet-monitor (1.0-0ubuntu1~jammy) jammy; urgency=medium
+
+  * Initial release.
+
+ -- Samuel Lane <samlane0@gmail.com>  Wed, 09 Nov 2022 21:20:27 +0100
