@@ -78,7 +78,7 @@ namespace DropletApplet {
             );
 
             this.attach(link,0,0,1,1);
-            Gtk.Label label_token = new Gtk.Label("Droplet Manager Token:");
+            Gtk.Label label_token = new Gtk.Label("Droplet Monitor Token:");
             Gtk.Button button_update = new Gtk.Button();
             button_update.set_label("Update Token");
             this.attach(label_token,0,1,1,1);

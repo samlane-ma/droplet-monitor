@@ -1,7 +1,7 @@
 [Plugin]
-Module=dropletmanager.so
+Module=dropletmonitor.so
 Name=Droplet Monitor
-Description=Droplet Manager
+Description=Droplet Monitor
 Authors=Sam Lane
 Copyright=Sam Lane
 Website=https://github.com/samlane-ma
