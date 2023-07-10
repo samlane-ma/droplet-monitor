@@ -1,10 +1,10 @@
 
-install_data('DropletManager.plugin', install_dir: LIB_INSTALL_DIR)
+install_data('DropletMonitor.plugin', install_dir: LIB_INSTALL_DIR)
 
 AppletNameSources = [
-'dropletmanager-applet.vala',
+'dropletmonitor-applet.vala',
 'dropletlist.vala',
-'dropletmanager-popover.vala',
+'dropletmonitor-popover.vala',
 'docean.vala',
 'curl-easy.vala',
 ]
@@ -26,4 +26,4 @@ AppletNameValaArgs = [
 '--vapidir=' + VAPI_DIR,
 ]
 
-shared_library('dropletmanager', AppletNameSources, dependencies: AppletNameDependencies, vala_args: AppletNameValaArgs, install: true, install_dir: LIB_INSTALL_DIR)
+shared_library('dropletmonitor', AppletNameSources, dependencies: AppletNameDependencies, vala_args: AppletNameValaArgs, install: true, install_dir: LIB_INSTALL_DIR)
