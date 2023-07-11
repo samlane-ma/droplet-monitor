@@ -1,6 +1,6 @@
 /*
  * This file is part of the vala-curl project.
- * 
+ *
  * Copyright 2013 Richard Wiedenhöft <richard.wiedenhoeft@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -72,7 +72,7 @@ namespace Curl {
 			stderr.printf("IOError in read_function: %s\n",e.message);
 			return 0;
 		}
-		
+
 		Posix.memcpy(ptr, (void*)buffer, read_bytes);
 
 		return read_bytes;

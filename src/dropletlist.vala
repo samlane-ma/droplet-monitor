@@ -54,7 +54,7 @@ class DropletList: Gtk.ListBox {
             mutex.lock();
             // if thread clears / reduces droplet list count, we need to make
             // sure we don't crash by selecting an index that no longer exists
-            if (droplets.length < (row.get_index()+1)) { 
+            if (droplets.length < (row.get_index()+1)) {
                 mutex.unlock();
                 return; }
             last_selected = droplets[row.get_index()].id;
@@ -97,7 +97,7 @@ class DropletList: Gtk.ListBox {
     }
 
     private void* get_all_droplets () {
-        
+
         string old_check = "";   // data returned from previous GET
         string this_check = "";  // current GET request
         int cycle = 0;           // current pass
@@ -114,10 +114,10 @@ class DropletList: Gtk.ListBox {
          A full check happens roughly every 4.5 minutes.
         */
 
-        // Since token is loaded async from keyring, add a slight delay 
+        // Since token is loaded async from keyring, add a slight delay
         // before first cycle so token is loaded so it doesn't wait a cycle
         Thread.usleep(500000);
-        
+
         while (stay_running) {
 
             // Check for stops
@@ -173,9 +173,9 @@ class DropletList: Gtk.ListBox {
                     message ("Error: %s", e.message);
                 }
 
-                this_check = "";   
+                this_check = "";
                 // form a string from the results and if the next check forms
-                // the same string, we know nothing has changed... 
+                // the same string, we know nothing has changed...
                 foreach (var droplet in droplets) {
                     this_check += @"$(droplet.name)_$(droplet.status)_$(droplet.public_ipv4)_";
                 }
@@ -250,7 +250,7 @@ class DropletList: Gtk.ListBox {
             var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 20);
             var name_label = new Gtk.Label(droplet.name);
             var ip_label = new Gtk.Label(droplet.public_ipv4);
-            string ip_tooltip = @"Private: $(droplet.private_ipv4)\nPublic: $(droplet.public_ipv4)\nFloating:" + 
+            string ip_tooltip = @"Private: $(droplet.private_ipv4)\nPublic: $(droplet.public_ipv4)\nFloating:" +
                                 @" $(droplet.floating_ip)\nIPv6: $(droplet.public_ipv6)";
             ip_label.set_tooltip_text(ip_tooltip);
             string info_tooltip = @"ID: $(droplet.id)\nLocation: $(droplet.location)\nImage name:"+

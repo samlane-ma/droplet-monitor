@@ -74,7 +74,7 @@ void power_droplet(string token, string droplet_id, int mode) throws Error {
 
 DODroplet[] get_droplets (string token) throws Error {
     // gets the current list of droplets and parses it into an array of DODroplets
-   
+
     DODroplet[]droplet_list = {};
 
     var curl = new Curl.Easy();
@@ -96,23 +96,23 @@ DODroplet[] get_droplets (string token) throws Error {
     } catch(GLib.IOError e) {
         message("Error: %s\n", e.message);
     }
-   
-    if (result == null) { 
+
+    if (result == null) {
         throw new Error(Quark.from_string ("DROPLETS"), 30, "Cannot Reach Server");
     }
-   
+
     if (result == "{\"id\": \"Unauthorized\", \"message\": \"Unable to authenticate you\" }") {
         throw new Error(Quark.from_string ("DROPLETS"), 20, "Unable to authenticate you");
     }
 
     var parser = new Json.Parser ();
-    parser.load_from_data (result, -1); 
+    parser.load_from_data (result, -1);
     var root_object = parser.get_root ().get_object ();
     var response = root_object.get_array_member ("droplets");
     if (response == null) {
         throw new Error(Quark.from_string ("DROPLETS"), 40, "Bad Data");
     }
-    
+
     foreach (var droplet in response.get_elements ()) {
         string ipv4 = "N/A";
         string ipv6 = "N/A";

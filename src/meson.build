@@ -10,8 +10,8 @@ AppletNameSources = [
 ]
 
 AppletNameDependencies = [
-dependency('gtk+-3.0', version: '>=3.18'), 
-dependency('budgie-1.0', version: '>=2'),
+dependency('gtk+-3.0'),
+dependency('budgie-1.0'),
 dependency('gdk-3.0'),
 dependency('libpeas-gtk-1.0'),
 dependency('libsecret-1'),

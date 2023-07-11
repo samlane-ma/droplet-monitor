@@ -96,7 +96,7 @@ namespace DropletApplet {
         private void set_token(string new_token) {
             // changes the token in the "Secret Service"
             var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
-                        Secret.SchemaFlags.NONE, 
+                        Secret.SchemaFlags.NONE,
                         "id", Secret.SchemaAttributeType.STRING);
             var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
             attributes["id"] = "droplet-oauth";
@@ -106,7 +106,7 @@ namespace DropletApplet {
                     Secret.password_store.end (async_res);
                 } catch (Error e) {
                     message("Unable to store token in keyring: %s", e.message);
-                }                   
+                }
             });
         }
 
@@ -182,7 +182,7 @@ namespace DropletApplet {
             popover.get_child().show_all();
             show_all();
 
-            Idle.add(() => { 
+            Idle.add(() => {
                 // watch_applet will monitor if the applet is removed
                 watch_applet(uuid);
                 return false;});
