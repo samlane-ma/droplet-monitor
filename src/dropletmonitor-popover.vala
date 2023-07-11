@@ -55,10 +55,11 @@ namespace DropletPopover {
             entry_ssh.set_alignment(1);
             Gtk.Label label_at = new Gtk.Label("@");
             Gtk.Label label_ssh = new Gtk.Label("");
-            label_ssh.set_justify(Gtk.Justification.LEFT);
+            label_ssh.set_xalign(0);
+            label_ssh.set_width_chars(15);
             box_ssh.pack_start(entry_ssh, false, false, 2);
             box_ssh.pack_start(label_at, false, false, 2);
-            box_ssh.pack_start(label_ssh, false, true, 2);
+            box_ssh.pack_start(label_ssh, false, false, 2);
             box_ssh.pack_end(button_ssh, false, false, 2);
             grid.attach(new Gtk.Label(""),0,7,3,1);
             grid.attach(box_ssh,0,8,3,1);

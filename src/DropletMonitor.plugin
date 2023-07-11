@@ -1,8 +1,8 @@
 [Plugin]
 Module=dropletmonitor.so
 Name=Droplet Monitor
-Description=Droplet Monitor
-Authors=Sam Lane
-Copyright=Sam Lane
+Description=Monitor Digital Ocean Droplets
+Authors=Samuel Lane
+Copyright=Samuel Lane
 Website=https://github.com/samlane-ma
 Icon=do-server-ok-symbolic

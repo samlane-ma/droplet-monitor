@@ -1,10 +1,10 @@
-project('droplet-monitor',
+project('com.github.samlane-ma.applet.droplet-monitor',
         ['vala', 'c'],
-        version: '0.1.0',
+        version: '1.1',
         meson_version: '>=0.40.0',
         license: 'GPL3')
 
-VAPI_DIR = join_paths(meson.source_root(), 'vapi')
+VAPI_DIR = join_paths(meson.current_source_dir(), 'vapi')
 
 # Global path variable
 prefix = get_option('prefix')
@@ -19,4 +19,3 @@ message('Installing applet...')
 
 subdir('src')
 subdir('icons')
-
