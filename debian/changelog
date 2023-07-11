@@ -1,3 +1,18 @@
+droplet-monitor (1.1-0ubuntu1~jammy) jammy; urgency=medium
+
+  * New release
+    - use libcurl instead of libsoup
+    - fixed applet naming inconsistencies
+  * Packaging Changes
+    - d/copyright bump dates
+    - d/copyright add copyright for curl-easy
+    - d/control drop libsoup2.4 dependency
+    - d/control add libcurl dependency
+    - d/control bump standards version
+    - d/control bump debhelper version
+
+ -- Samuel Lane <samlane00@gmail.com>  Tue, 11 Jul 2023 06:41:01 -0400
+
 droplet-monitor (1.0-0ubuntu1~jammy) jammy; urgency=medium
 
   * Initial release.
