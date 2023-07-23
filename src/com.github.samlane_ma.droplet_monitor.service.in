@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.github.samlane_ma.droplet_monitor
+Exec=@BINDIR@/server-dm

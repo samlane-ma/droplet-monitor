@@ -1,0 +1,7 @@
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
+#define PACKAGE_NAME "@PACKAGE_NAME@"
+#define PACKAGE_BINDIR "@PACKAGE_BINDIR@"
+
+#endif

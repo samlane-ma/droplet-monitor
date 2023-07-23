@@ -1,7 +1,7 @@
 project('com.github.samlane-ma.applet.droplet-monitor',
         ['vala', 'c'],
         version: '1.1',
-        meson_version: '>=0.40.0',
+        meson_version: '>=0.50.0',
         license: 'GPL3')
 
 VAPI_DIR = join_paths(meson.current_source_dir(), 'vapi')
@@ -10,6 +10,10 @@ VAPI_DIR = join_paths(meson.current_source_dir(), 'vapi')
 prefix = get_option('prefix')
 libdir = join_paths(prefix, get_option('libdir'))
 datadir = join_paths(prefix, get_option('datadir'))
+bindir = get_option('bindir')
+if bindir == 'bin'
+	bindir = join_paths(prefix, bindir)
+endif
 
 PIXMAPS_DIR = join_paths(datadir, 'pixmaps')
 
