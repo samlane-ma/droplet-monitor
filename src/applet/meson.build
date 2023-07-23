@@ -11,7 +11,6 @@ DropletMonitorSources = [
     'dropletlist.vala',
     'dropletmonitor-popover.vala',
     'docean.vala',
-    'curl-easy.vala',
 ]
 
 DropletMonitorDependencies = [
@@ -21,7 +20,6 @@ DropletMonitorDependencies = [
     dependency('libpeas-gtk-1.0'),
     dependency('libsecret-1'),
     dependency('json-glib-1.0'),
-    dependency('libcurl'),
     meson.get_compiler('vala').find_library('posix'),
     meson.get_compiler('c').find_library('m', required: false)
 ]

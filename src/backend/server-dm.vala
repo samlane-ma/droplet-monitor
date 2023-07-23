@@ -8,6 +8,7 @@ public class DOServer : Object {
     private Soup.Session session = new Soup.Session();
 
     public DOServer() {
+        session.timeout = 5;
         Timeout.add_seconds_full(GLib.Priority.DEFAULT, 10, () => {
             if (token == "") {
                 return true;

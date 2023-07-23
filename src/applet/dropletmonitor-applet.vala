@@ -122,7 +122,6 @@ namespace DropletApplet {
         private DropletPopover.DropletPopover? popover = null;
         private unowned Budgie.PopoverManager? manager = null;
         private string token = "";
-        private NetworkMonitor netmon;
         private string? password;
 
         public string uuid { public set; public get; }
@@ -169,14 +168,6 @@ namespace DropletApplet {
                     password = "";
                 }
                 droplet_token.update_token(password);
-            });
-
-            // Monitors if the network changes (i.e connects or disconnects)
-            // to update the droplet list quicker
-            netmon = NetworkMonitor.get_default ();
-            Timeout.add_seconds_full(GLib.Priority.DEFAULT, 2, () => {
-                netmon.network_changed.connect (popover.update_network);
-                return false;
             });
 
             popover.get_child().show_all();

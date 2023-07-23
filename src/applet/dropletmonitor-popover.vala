@@ -91,7 +91,6 @@ namespace DropletPopover {
 
             button_refresh.clicked.connect(() => {
                 button_refresh.set_sensitive(false);
-                droplet_list.update();
                 Timeout.add_seconds_full(GLib.Priority.DEFAULT, 10, () => {
                     button_refresh.set_sensitive(true);
                     return false;

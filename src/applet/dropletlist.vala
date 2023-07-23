@@ -4,6 +4,15 @@ using DOcean;
 
 namespace DropletList {
 
+[DBus (name = "com.github.samlane_ma.droplet_monitor")]
+interface DOClient : GLib.Object {
+    public abstract DODroplet[] get_droplets () throws GLib.Error;
+    public abstract void set_token(string token) throws GLib.Error;
+    public abstract string send_droplet_signal(string mode, string droplet_id) throws GLib.Error;
+    public signal void droplets_updated ();
+    public signal void no_token ();
+}
+
 class DropletList: Gtk.ListBox {
     private DODroplet[] droplets = {};
     private string token;
@@ -11,38 +20,34 @@ class DropletList: Gtk.ListBox {
     private Gtk.Image icon;
     private bool stay_running = true;
 
-    // thread will do full update every 20 passes - the decay is how many times
-    // it will do a full update every pass, in the case of a start/stop request
-    private int decay = 3;
-
-    private Mutex mutex = Mutex();
-
-    // use Queues for the list of items to start/stop/reboot
-    // then we can check if they get added multiple times and just run once
-    private Queue<string> start_queue;
-    private Queue<string> stop_queue;
-    private Queue<string> reboot_queue;
-
     private string[] running = {};
     private bool is_selected = false;
     private string last_selected = "";
     private string last_ip = "";
     private Gtk.Label? ssh_label = null;
+    private DOClient client = null;
+    private string old_check = "";
+
 
     public DropletList(string token) {
-        this.token = token;
-        start_queue = new Queue<string> ();
-        stop_queue = new Queue<string> ();
-        reboot_queue = new Queue<string> ();
+
+        try {
+            client = Bus.get_proxy_sync (BusType.SESSION, "com.github.samlane_ma.droplet_monitor",
+                                                          "/com/github/samlane_ma/droplet_monitor");
+        } catch (Error e) {
+
+        }
+
         placeholder = new Gtk.Label("  Searching for droplets  \n\n\n");
         this.set_placeholder(placeholder);
         placeholder.show();
         this.row_selected.connect(update_selected);
-        try {
-            new Thread<void*>.try(null, get_all_droplets);
-        } catch (Error thread_error) {
-            message("Could not start thread");
-        }
+        update_token(token);
+        get_all_droplets();
+        Timeout.add_seconds(60, get_all_droplets);
+        client.droplets_updated.connect(() => {
+            get_all_droplets();
+        });
     }
 
     public void set_ssh_label(Gtk.Label label) {
@@ -51,15 +56,10 @@ class DropletList: Gtk.ListBox {
 
     private void update_selected(ListBoxRow? row) {
         if (row != null) {
-            mutex.lock();
-            // if thread clears / reduces droplet list count, we need to make
-            // sure we don't crash by selecting an index that no longer exists
             if (droplets.length < (row.get_index()+1)) {
-                mutex.unlock();
                 return; }
             last_selected = droplets[row.get_index()].id;
             last_ip = droplets[row.get_index()].public_ipv4;
-            mutex.unlock();
             is_selected = true;
             ssh_label.set_label(last_ip);
         }
@@ -73,21 +73,21 @@ class DropletList: Gtk.ListBox {
     public void add_start () {
         if (is_empty()) return;
         if (is_selected) {
-            start_queue.push_head(last_selected);
+            toggle_selected(last_selected, DOcean.ON);
         }
     }
 
     public void add_stop () {
         if (is_empty()) return;
         if (is_selected) {
-            stop_queue.push_head(last_selected);
+            toggle_selected(last_selected, DOcean.OFF);
         }
     }
 
     public void add_reboot () {
         if (is_empty()) return;
         if (is_selected) {
-            reboot_queue.push_head(last_selected);
+            toggle_selected(last_selected, DOcean.REBOOT);
         }
     }
 
@@ -96,105 +96,29 @@ class DropletList: Gtk.ListBox {
         stay_running = false;
     }
 
-    private void* get_all_droplets () {
+    private bool get_all_droplets () {
 
-        string old_check = "";   // data returned from previous GET
         string this_check = "";  // current GET request
-        int cycle = 0;           // current pass
 
-        /*
-        Thread will
-          1: process stops added to the queues
-          2: process starts added to the queue
-          3: process reboots added to the queue
-          4: do a full check if its been 15 cycles or if decay has been added
-             to check more frequently after a change (start, stop,reboot)
-
-         One cycle is approx. 18 seconds.
-         A full check happens roughly every 4.5 minutes.
-        */
-
-        // Since token is loaded async from keyring, add a slight delay
-        // before first cycle so token is loaded so it doesn't wait a cycle
-        Thread.usleep(500000);
-
-        while (stay_running) {
-
-            // Check for stops
-            string item = null;
-            string[] stop_list = { };
-	        while ((item = stop_queue.pop_head ()) != null) {
-                if (!(item in stop_list)) {
-                    stop_list += item;
-                }
-            }
-            foreach (var selected_droplet in stop_list) {
-		        toggle_selected(selected_droplet, DOcean.OFF);
-            }
-
-            // Check for starts
-            item = null;
-            string[] start_list = { };
-	        while ((item = start_queue.pop_head ()) != null) {
-		        if (!(item in stop_list)) {
-                    start_list += item;
-                }
-            }
-            foreach (var selected_droplet in start_list) {
-		        toggle_selected(selected_droplet, DOcean.ON);
-            }
-
-            // Check for reboots
-            item = null;
-            string[] reboot_list = { };
-	        while ((item = reboot_queue.pop_head ()) != null) {
-		        if (!(item in reboot_list)) {
-                    reboot_list += item;
-                }
-            }
-            foreach (var selected_droplet in reboot_list) {
-		        toggle_selected(selected_droplet, DOcean.REBOOT);
-            }
-
-            if (stop_list.length + start_list.length + reboot_list.length > 0) {
-                decay = 4;
-            }
-
-            // Regular update if correct cycle or if extra checks needed
-            if (cycle > 15 || decay > 0) {
-                droplets = {};
-                try{
-                    // request updated droplet list from D.O.
-                    var droplet_check = DOcean.get_droplets(token);
-                    mutex.lock();
-                    droplets = droplet_check;
-                    mutex.unlock();
-                } catch (Error e) {
-                    message ("Error: %s", e.message);
-                }
-
-                this_check = "";
-                // form a string from the results and if the next check forms
-                // the same string, we know nothing has changed...
-                foreach (var droplet in droplets) {
-                    this_check += @"$(droplet.name)_$(droplet.status)_$(droplet.public_ipv4)_";
-                }
-                if (old_check != this_check) {
-                    Idle.add( () => {
-                        return update_gui(droplets);
-                    });
-                    old_check = this_check;
-                }
-                cycle = 0;
-                mutex.lock();
-                decay = (decay >0 ? decay - 1: 0);
-                mutex.unlock();
-            } else {
-                cycle++;
-            }
-            Thread.usleep(15000000);
+        // Regular update if correct cycle or if extra checks needed
+        droplets = {};
+        try{
+            // request updated droplet list from D.O.
+            var droplet_check = client.get_droplets();
+            droplets = droplet_check;
+        } catch (Error e) {
+            message ("Error: %s", e.message);
         }
-        return null;
+
+        this_check = "";
+        foreach (var droplet in droplets) {
+            this_check += @"$(droplet.name)_$(droplet.status)_$(droplet.public_ipv4)_";
+        }
+        if (old_check != this_check) {
+            update_gui(droplets);
+            old_check = this_check;
+        }
+        return stay_running;
     }
 
     public void set_update_icon(Gtk.Image icon) {
@@ -217,18 +141,14 @@ class DropletList: Gtk.ListBox {
         return false;
     }
 
-    public void update() {
-        // allows parent class to trigger extra updates for 4 loops, in case of
-        // an event such as Refresh button pressed or network changed
-        mutex.lock();
-        decay = 4;
-        mutex.unlock();
-    }
-
     public void update_token(string new_token) {
         // allows parent class to update the D.O. oauth token
         this.token = new_token;
-        update();
+        try {
+            client.set_token(token);
+        } catch (Error e) {
+            warning("Unable to update token");
+        }
     }
 
     private bool update_gui (DODroplet[] droplet_list) {
@@ -305,17 +225,30 @@ class DropletList: Gtk.ListBox {
         return (last_selected in running);
     }
 
-    public void toggle_selected (string selected_droplet, int method) {
+    public void toggle_selected (string selected_droplet, int mode) {
         // sends the action to the selected droplet
         if (is_empty()) return;
         int current_selected = this.get_selected_row().get_index();
         if (current_selected >= 0) {
             try {
-                DOcean.power_droplet(token, selected_droplet, method);
+                string mparams = "";
+                if (mode == ON) {
+                    mparams = "on";
+                } else if (mode == OFF) {
+                    mparams = "off";
+                } else if (mode == REBOOT) {
+                    mparams = "reboot";
+                }
+
+                client.send_droplet_signal(mparams, selected_droplet);
             } catch (Error e) {
                 message("Error accessing server: %s", e.message);
             }
         }
+    }
+
+    public void update() {
+        get_all_droplets();
     }
 
 } // end class
