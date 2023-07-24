@@ -6,8 +6,8 @@ namespace DropletList {
 
 [DBus (name = "com.github.samlane_ma.droplet_monitor")]
 interface DOClient : GLib.Object {
-    public abstract DODroplet[] get_droplets () throws GLib.Error;
-    public abstract void set_token(string token) throws GLib.Error;
+    public abstract async DODroplet[] get_droplets () throws GLib.Error;
+    public abstract async void set_token(string token) throws GLib.Error;
     public abstract string send_droplet_signal(int mode, string droplet_id) throws GLib.Error;
     public signal void droplets_updated ();
     public signal void no_token ();
@@ -51,7 +51,7 @@ class DropletList: Gtk.ListBox {
 
         update_token(token);
 
-        Timeout.add_seconds(60, get_all_droplets);
+        Timeout.add_seconds(5, get_all_droplets);
 
         /* Service will signal if its running without a token. This would
          * most likely only happen if the server is killed and restarted
@@ -102,22 +102,23 @@ class DropletList: Gtk.ListBox {
 
         // Regular update if correct cycle or if extra checks needed
         droplets = {};
-        try{
-            // request updated droplet list from D.O.
-            var droplet_check = client.get_droplets();
-            droplets = droplet_check;
-        } catch (Error e) {
-            message ("Error: %s", e.message);
-        }
 
-        this_check = "";
-        foreach (var droplet in droplets) {
-            this_check += @"$(droplet.name)_$(droplet.status)_$(droplet.public_ipv4)_";
-        }
-        if (old_check != this_check) {
-            update_gui(droplets);
-            old_check = this_check;
-        }
+        client.get_droplets.begin((obj, res) => {
+            try {
+                var droplet_check = client.get_droplets.end(res);
+                droplets = droplet_check;
+                foreach (var droplet in droplets) {
+                    this_check += @"$(droplet.name)_$(droplet.status)_$(droplet.public_ipv4)_";
+                }
+                if (old_check != this_check) {
+                    update_gui(droplets);
+                    old_check = this_check;
+                }
+            } catch (Error e) {
+                update_gui(droplets);
+                old_check = "";
+            }
+        });
         return stay_running;
     }
 
@@ -146,11 +147,14 @@ class DropletList: Gtk.ListBox {
     public void update_token(string new_token) {
         // allows parent class to update the D.O. oauth token
         this.token = new_token;
-        try {
-            client.set_token(token);
-        } catch (Error e) {
-            warning("Unable to update token");
-        }
+
+        client.set_token.begin(token, (obj, res) => {
+            try {
+                client.set_token.end(res);
+            } catch (Error e) {
+                message("Unable to set token");
+            }
+        });
     }
 
     private bool update_gui (DODroplet[] droplet_list) {

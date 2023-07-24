@@ -13,7 +13,7 @@ public class DOServer : Object {
     private bool empty_once = false;
 
     public DOServer() {
-        session.timeout = 8;
+        session.timeout = 10;
         Timeout.add_seconds_full(GLib.Priority.DEFAULT, 15, () => {
             if (token == "") {
                 return true;
@@ -52,6 +52,7 @@ public class DOServer : Object {
         string output = "";
         var message = new Soup.Message ("GET", "https://api.digitalocean.com/v2/droplets");
         message.request_headers.append ("Authorization", @"Bearer $token");
+        message.add_flags(Soup.MessageFlags .NO_REDIRECT);
         try {
             var retbytes = session.send_and_read (message);
             output = (string)retbytes.get_data();
@@ -62,7 +63,7 @@ public class DOServer : Object {
     }
 
     [DBus (name = "GetDroplets")]
-    public DODroplet[] get_droplets () throws DBusError, IOError {
+    public async DODroplet[] get_droplets () throws DBusError, IOError {
         return all_droplets;
     }
 
@@ -96,6 +97,7 @@ public class DOServer : Object {
         message.set_request_body_from_bytes("application/json", new Bytes(mparams.data));
         message.request_headers.append("Content-Type","application/json");
         message.request_headers.append ("Authorization", @"Bearer $token");
+        message.add_flags(Soup.MessageFlags .NO_REDIRECT);
         try {
             var response = session.send_and_read(message);
             string str = (string)response.get_data();
@@ -106,7 +108,7 @@ public class DOServer : Object {
     }
 
     [DBus (name = "SetToken")]
-    public void set_token (string token) throws DBusError, IOError {
+    public async void set_token (string token) throws DBusError, IOError {
         this.token = token;
         update();
     }
