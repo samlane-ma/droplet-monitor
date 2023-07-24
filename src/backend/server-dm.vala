@@ -1,6 +1,10 @@
 [DBus (name = "com.github.samlane_ma.droplet_monitor")]
 public class DOServer : Object {
 
+    const int OFF = 0;
+    const int ON = 1;
+    const int REBOOT = 2;
+
     private string last = "";
     private string current = "";
     private string token = "";
@@ -13,7 +17,7 @@ public class DOServer : Object {
             if (token == "") {
                 return true;
             }
-            current = get_droplet_list(session, token);
+                get_droplet_list();
             if (current != last) {
                 last = current;
                 all_droplets = get_droplet_data(current);
@@ -28,12 +32,25 @@ public class DOServer : Object {
     }
 
     private void update () {
-        current = get_droplet_list(session, token);
+        get_droplet_list();
         all_droplets = get_droplet_data(current);
         if (current != last) {
             last = current;
             droplets_updated();
         }
+    }
+
+    private void get_droplet_list () {
+        string output = "";
+        var message = new Soup.Message ("GET", "https://api.digitalocean.com/v2/droplets");
+        message.request_headers.append ("Authorization", @"Bearer $token");
+        try {
+            var retbytes = session.send_and_read (message);
+            output = (string)retbytes.get_data();
+        } catch (Error e) {
+            current = "no data";
+        }
+        current = output;
     }
 
     [DBus (name = "GetDroplets")]
@@ -48,6 +65,36 @@ public class DOServer : Object {
             drops += @"$(d.name) : $(d.public_ipv4) : $(d.status)\n";
         }
         return drops;
+    }
+
+    [DBus (name = "SendDropletSignal")]
+    public string send_droplet_signal(int mode, string droplet_id) throws DBusError, IOError {
+        if (token == "") {
+            return "no token";
+        }
+
+        string mparams = "";
+        if (mode == ON) {
+            mparams = "{\"type\":\"power_on\"}";
+        } else if (mode == OFF) {
+            mparams = "{\"type\":\"shutdown\"}";
+        } else if (mode == REBOOT) {
+            mparams = "{\"type\":\"reboot\"}";
+        } else {
+            return "invalid type";
+        }
+
+        var message = new Soup.Message ("POST", @"https://api.digitalocean.com/v2/droplets/$droplet_id/actions");
+        message.set_request_body_from_bytes("application/json", new Bytes(mparams.data));
+        message.request_headers.append("Content-Type","application/json");
+        message.request_headers.append ("Authorization", @"Bearer $token");
+        try {
+            var response = session.send_and_read(message);
+            string str = (string)response.get_data();
+            return str;
+        } catch (Error e) {
+            return "Error sending signal";
+        }
     }
 
     [DBus (name = "SetToken")]
@@ -69,19 +116,6 @@ void on_bus_aquired (DBusConnection conn) {
     } catch (IOError e) {
         stderr.printf ("Could not register service\n");
     }
-}
-
-string get_droplet_list (Soup.Session session, string token) {
-    string output = "";
-    var message = new Soup.Message ("GET", "https://api.digitalocean.com/v2/droplets");
-    message.request_headers.append ("Authorization", @"Bearer $token");
-    try {
-        var retbytes = session.send_and_read (message);
-        output = (string)retbytes.get_data();
-    } catch (Error e) {
-        return "no data";
-    }
-    return output;
 }
 
 public struct DODroplet {

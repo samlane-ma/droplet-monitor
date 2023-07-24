@@ -8,7 +8,7 @@ namespace DropletList {
 interface DOClient : GLib.Object {
     public abstract DODroplet[] get_droplets () throws GLib.Error;
     public abstract void set_token(string token) throws GLib.Error;
-    public abstract string send_droplet_signal(string mode, string droplet_id) throws GLib.Error;
+    public abstract string send_droplet_signal(int mode, string droplet_id) throws GLib.Error;
     public signal void droplets_updated ();
     public signal void no_token ();
 }
@@ -29,7 +29,7 @@ class DropletList: Gtk.ListBox {
     private string old_check = "";
 
 
-    public DropletList(string token) {
+    public DropletList(string do_token) {
 
         try {
             client = Bus.get_proxy_sync (BusType.SESSION, "com.github.samlane_ma.droplet_monitor",
@@ -38,15 +38,28 @@ class DropletList: Gtk.ListBox {
 
         }
 
+        client.droplets_updated.connect(() => {
+            get_all_droplets();
+        });
+
+        this.token = do_token;
+
         placeholder = new Gtk.Label("  Searching for droplets  \n\n\n");
         this.set_placeholder(placeholder);
         placeholder.show();
         this.row_selected.connect(update_selected);
+
         update_token(token);
-        get_all_droplets();
+
         Timeout.add_seconds(60, get_all_droplets);
-        client.droplets_updated.connect(() => {
-            get_all_droplets();
+
+        /* Service will signal if its running without a token. This would
+         * most likely only happen if the server is killed and restarted
+         * while the applet is already running. No need to re-update the list
+         * after passing it this token, as the server will trigger an update
+         */
+        client.no_token.connect(() => {
+            update_token(token);
         });
     }
 
@@ -57,7 +70,8 @@ class DropletList: Gtk.ListBox {
     private void update_selected(ListBoxRow? row) {
         if (row != null) {
             if (droplets.length < (row.get_index()+1)) {
-                return; }
+                return;
+            }
             last_selected = droplets[row.get_index()].id;
             last_ip = droplets[row.get_index()].public_ipv4;
             is_selected = true;
@@ -70,24 +84,10 @@ class DropletList: Gtk.ListBox {
     }
 
     // these allow parent class to add actions
-    public void add_start () {
+    public void do_action (int action) {
         if (is_empty()) return;
         if (is_selected) {
-            toggle_selected(last_selected, DOcean.ON);
-        }
-    }
-
-    public void add_stop () {
-        if (is_empty()) return;
-        if (is_selected) {
-            toggle_selected(last_selected, DOcean.OFF);
-        }
-    }
-
-    public void add_reboot () {
-        if (is_empty()) return;
-        if (is_selected) {
-            toggle_selected(last_selected, DOcean.REBOOT);
+            toggle_selected(last_selected, action);
         }
     }
 
@@ -134,7 +134,9 @@ class DropletList: Gtk.ListBox {
     public bool has_selected() {
         // returns true if this ListBox has a selected row
         if (is_empty()) return false;
-        if (this.get_selected_row() == null) return false;
+        if (this.get_selected_row() == null) {
+            return false;
+        }
         if (this.get_selected_row().get_index() >= 0) {
             return true;
         }
@@ -231,16 +233,7 @@ class DropletList: Gtk.ListBox {
         int current_selected = this.get_selected_row().get_index();
         if (current_selected >= 0) {
             try {
-                string mparams = "";
-                if (mode == ON) {
-                    mparams = "on";
-                } else if (mode == OFF) {
-                    mparams = "off";
-                } else if (mode == REBOOT) {
-                    mparams = "reboot";
-                }
-
-                client.send_droplet_signal(mparams, selected_droplet);
+                client.send_droplet_signal(mode, selected_droplet);
             } catch (Error e) {
                 message("Error accessing server: %s", e.message);
             }

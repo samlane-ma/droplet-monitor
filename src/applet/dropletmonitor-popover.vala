@@ -78,19 +78,20 @@ namespace DropletPopover {
             button_lock.set_always_show_image(true);
 
             button_stop.clicked.connect(() => {
-                send_action(DOcean.OFF, label_status);
+                send_action(DOcean.OFF, label_status, button_stop);
             });
 
             button_start.clicked.connect(() => {
-                send_action(DOcean.ON, label_status);
+                send_action(DOcean.ON, label_status, button_start);
             });
 
             button_reboot.clicked.connect(() => {
-                send_action(DOcean.REBOOT, label_status);
+                send_action(DOcean.REBOOT, label_status, button_reboot);
             });
 
             button_refresh.clicked.connect(() => {
                 button_refresh.set_sensitive(false);
+                droplet_list.update();
                 Timeout.add_seconds_full(GLib.Priority.DEFAULT, 10, () => {
                     button_refresh.set_sensitive(true);
                     return false;
@@ -133,25 +134,21 @@ namespace DropletPopover {
             this.get_child().show_all();
         }
 
-        private void send_action (int action, Gtk.Label status) {
+        private void send_action (int action, Gtk.Label status, Gtk.Button button) {
             if (!droplet_list.has_selected()) return;
             string[] action_name = {"Shutdown", "Startup", "Reboot"};
-            switch (action) {
-                case DOcean.OFF :
-                    if (!droplet_list.selected_is_running()) return;
-                    droplet_list.add_stop();
-                    break;
-                case DOcean.ON :
-                    if (droplet_list.selected_is_running()) return;
-                    droplet_list.add_start();
-                    break;
-                case DOcean.REBOOT :
-                    droplet_list.add_reboot();
-                    break;
+            if (action == DOcean.ON && droplet_list.selected_is_running()) {
+                return;
             }
+            if (action == DOcean.OFF && !droplet_list.selected_is_running()) {
+                return;
+            }
+            button.set_sensitive(false);
             status.set_text(@"$(action_name[action]) sent. This may take a minute to complete.");
             Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
+                droplet_list.do_action(action);
                 status.set_text("");
+                button.set_sensitive(true);
                 return false;
             });
         }
