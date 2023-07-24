@@ -6,19 +6,17 @@ public class DOServer : Object {
     const int REBOOT = 2;
 
     private string last = "";
-    private string current = "";
     private string token = "";
     DODroplet[] all_droplets = {};
-    private Soup.Session session = new Soup.Session();
     private bool empty_once = false;
 
     public DOServer() {
-        session.timeout = 10;
         Timeout.add_seconds_full(GLib.Priority.DEFAULT, 15, () => {
+            string current = "";
             if (token == "") {
                 return true;
             }
-                get_droplet_list();
+                current = get_droplet_list();
             if (current != last) {
                 if (current == "" && !empty_once) {
                     // Don't clear the list unless we get two empty results in a row
@@ -40,7 +38,7 @@ public class DOServer : Object {
     }
 
     private void update () {
-        get_droplet_list();
+        var current = get_droplet_list();
         all_droplets = get_droplet_data(current);
         if (current != last) {
             last = current;
@@ -48,8 +46,10 @@ public class DOServer : Object {
         }
     }
 
-    private void get_droplet_list () {
+    private string get_droplet_list () {
         string output = "";
+        Soup.Session session = new Soup.Session();
+        session.timeout = 10;
         var message = new Soup.Message ("GET", "https://api.digitalocean.com/v2/droplets");
         message.request_headers.append ("Authorization", @"Bearer $token");
         message.add_flags(Soup.MessageFlags .NO_REDIRECT);
@@ -57,9 +57,9 @@ public class DOServer : Object {
             var retbytes = session.send_and_read (message);
             output = (string)retbytes.get_data();
         } catch (Error e) {
-            current = "no data";
+            return "no data";
         }
-        current = output;
+        return output;
     }
 
     [DBus (name = "GetDroplets")]
@@ -67,21 +67,12 @@ public class DOServer : Object {
         return all_droplets;
     }
 
-    [DBus (name = "GetCurrentDroplets")]
-    public string get_current_droplets() throws DBusError, IOError {
-        string drops = "\n";
-        foreach(DODroplet d in all_droplets) {
-            drops += @"$(d.name) : $(d.public_ipv4) : $(d.status)\n";
-        }
-        return drops;
-    }
 
     [DBus (name = "SendDropletSignal")]
-    public string send_droplet_signal(int mode, string droplet_id) throws DBusError, IOError {
+    public async string send_droplet_signal(int mode, string droplet_id) throws DBusError, IOError {
         if (token == "") {
             return "no token";
         }
-
         string mparams = "";
         if (mode == ON) {
             mparams = "{\"type\":\"power_on\"}";
@@ -93,6 +84,8 @@ public class DOServer : Object {
             return "invalid type";
         }
 
+        Soup.Session session = new Soup.Session();
+        session.timeout = 10;
         var message = new Soup.Message ("POST", @"https://api.digitalocean.com/v2/droplets/$droplet_id/actions");
         message.set_request_body_from_bytes("application/json", new Bytes(mparams.data));
         message.request_headers.append("Content-Type","application/json");
@@ -100,8 +93,7 @@ public class DOServer : Object {
         message.add_flags(Soup.MessageFlags .NO_REDIRECT);
         try {
             var response = session.send_and_read(message);
-            string str = (string)response.get_data();
-            return str;
+            return (string)response.get_data();
         } catch (Error e) {
             return "Error sending signal";
         }

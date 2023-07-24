@@ -145,8 +145,8 @@ namespace DropletPopover {
             }
             button.set_sensitive(false);
             status.set_text(@"$(action_name[action]) sent. This may take a minute to complete.");
+            droplet_list.do_action(action);
             Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
-                droplet_list.do_action(action);
                 status.set_text("");
                 button.set_sensitive(true);
                 return false;

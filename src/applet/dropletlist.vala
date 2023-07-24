@@ -8,7 +8,7 @@ namespace DropletList {
 interface DOClient : GLib.Object {
     public abstract async DODroplet[] get_droplets () throws GLib.Error;
     public abstract async void set_token(string token) throws GLib.Error;
-    public abstract string send_droplet_signal(int mode, string droplet_id) throws GLib.Error;
+    public abstract async string send_droplet_signal(int mode, string droplet_id) throws GLib.Error;
     public signal void droplets_updated ();
     public signal void no_token ();
 }
@@ -236,11 +236,13 @@ class DropletList: Gtk.ListBox {
         if (is_empty()) return;
         int current_selected = this.get_selected_row().get_index();
         if (current_selected >= 0) {
-            try {
-                client.send_droplet_signal(mode, selected_droplet);
-            } catch (Error e) {
-                message("Error accessing server: %s", e.message);
-            }
+            client.send_droplet_signal.begin(mode, selected_droplet, (obj, res) => {
+                try {
+                    client.send_droplet_signal.end(res);
+                } catch (Error e) {
+                    message("Unable to send signal");
+                }
+            });
         }
     }
 
