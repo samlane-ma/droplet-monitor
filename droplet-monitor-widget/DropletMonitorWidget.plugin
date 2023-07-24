@@ -1,0 +1,8 @@
+[Plugin]
+Module=com.github.samlane-ma.widget.droplet-monitor.so
+Name=Droplet Monitor Widget
+Description=Monitor Digital Ocean Droplets
+Authors=Samuel Lane
+Copyright=Samuel Lane
+Website=https://github.com/samlane-ma
+Icon=do-server-ok-symbolic

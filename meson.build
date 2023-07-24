@@ -21,5 +21,6 @@ LIB_INSTALL_DIR = join_paths(prefix, libdir, 'budgie-desktop', 'plugins', meson.
 
 message('Installing applet...')
 
-subdir('src')
-subdir('icons')
+subdir('droplet-monitor-server')
+subdir('droplet-monitor-applet')
+subdir('droplet-monitor-widget')
