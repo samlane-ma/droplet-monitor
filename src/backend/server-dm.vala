@@ -10,18 +10,26 @@ public class DOServer : Object {
     private string token = "";
     DODroplet[] all_droplets = {};
     private Soup.Session session = new Soup.Session();
+    private bool empty_once = false;
 
     public DOServer() {
-        session.timeout = 5;
-        Timeout.add_seconds_full(GLib.Priority.DEFAULT, 10, () => {
+        session.timeout = 8;
+        Timeout.add_seconds_full(GLib.Priority.DEFAULT, 15, () => {
             if (token == "") {
                 return true;
             }
                 get_droplet_list();
             if (current != last) {
+                if (current == "" && !empty_once) {
+                    // Don't clear the list unless we get two empty results in a row
+                    // Prevents the droplets from clearing due to a one time connection error
+                    empty_once = true;
+                    return true;
+                }
                 last = current;
                 all_droplets = get_droplet_data(current);
                 droplets_updated();
+                empty_once = false;
             }
             return true;
         });
