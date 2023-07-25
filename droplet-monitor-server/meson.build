@@ -7,7 +7,7 @@
                install_dir: join_paths(datadir, 'dbus-1', 'services'))
 
 ServerSources = [
-    'droplet-monitor-service.vala'
+    'server-dm.vala'
 ]
 
 ServerDependencies = [
@@ -15,4 +15,4 @@ ServerDependencies = [
     dependency('libsoup-3.0'),
 ]
 
-executable('droplet-monitor-service', ServerSources, dependencies: ServerDependencies, install: true, install_dir: bindir)
+executable('server-dm', ServerSources, dependencies: ServerDependencies, install: true, install_dir: bindir)
