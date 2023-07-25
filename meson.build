@@ -19,7 +19,7 @@ PIXMAPS_DIR = join_paths(datadir, 'pixmaps')
 
 LIB_INSTALL_DIR = join_paths(prefix, libdir, 'budgie-desktop', 'plugins', meson.project_name())
 
-subdir('droplet-monitor-server')
+subdir('droplet-monitor-service')
 subdir('droplet-monitor-applet')
 subdir('droplet-monitor-widget')
 

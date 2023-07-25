@@ -34,7 +34,6 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
 	private WidgetDropletList.WidgetDropletList droplet_list;
 	private DropletMonitorGrid.DropletMonitorGrid dm_grid;
 	private Gtk.Image? icon;
-	private Gtk.Label label_ssh;
 	private string token = "";
 	private string? password;
 	private Gtk.Revealer? content_revealer = null;
