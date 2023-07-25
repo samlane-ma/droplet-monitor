@@ -1,31 +1,11 @@
 
 public class DropletMonitorPlugin : Budgie.RavenPlugin, Peas.ExtensionBase {
-	
 	public Budgie.RavenWidget new_widget_instance(string uuid, GLib.Settings? settings) {
 		return new DropletMonitorWidget(uuid, settings);
 	}
 
 	public bool supports_settings() {
-		return true;
-	}
-}
-
-public class DropletToken : Object {
-	// this allows Budgie Desktop settings to update the token
-	// of an already running applet
-
-	private static WidgetDropletList.WidgetDropletList? droplet_list;
-	private static string app_token;
-
-	public void set_droplet_list(WidgetDropletList.WidgetDropletList dl) {
-		droplet_list = dl;
-	}
-
-	public void update_token(string token) {
-		if (droplet_list != null) {
-			app_token = token;
-			droplet_list.update_token(app_token);
-		}
+		return false;
 	}
 }
 
@@ -55,16 +35,13 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
         var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
         attributes["id"] = "droplet-oauth";
 
-		DropletToken droplet_token = new DropletToken();
-		droplet_token.set_droplet_list(droplet_list);
-
 		Secret.password_lookupv.begin (droplet_schema, attributes, null, (obj, async_res) => {
 			try {
 				password = Secret.password_lookup.end (async_res);
 				if (password == null) {
 					password = "";
 				}
-                droplet_token.update_token(password);
+				droplet_list.update_token(password);
 			} catch (Error e) {
 				message("Unable to retrieve token from keyring: %s", e.message);
 				password = "";
@@ -106,69 +83,7 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
 		content.add(dm_grid);
 		show_all();
 	}
-
-	public override Gtk.Widget build_settings_ui() {
-        return new DropletMonitorWidgetSettings(get_instance_settings());
-    }
 }
-
-public class DropletMonitorWidgetSettings : Gtk.Grid {
-
-    private Settings settings;
-
-    public DropletMonitorWidgetSettings (Settings? app_settings) {
-
-        settings = app_settings;
-
-		DropletToken droplet_token = new DropletToken();
-
-		Gtk.Entry entry_token = new Gtk.Entry();
-		Gtk.LinkButton link = new Gtk.LinkButton.with_label(
-			"https://docs.digitalocean.com/reference/api/create-personal-access-token/",
-			"For info on how to obtain your\npersonal Digital Ocean™ token"
-		);
-
-		this.attach(link,0,0,1,1);
-		Gtk.Label label_token = new Gtk.Label("Droplet Monitor Token:");
-		Gtk.Button button_update = new Gtk.Button();
-		button_update.set_label("Update Token");
-		this.attach(label_token,0,1,1,1);
-		this.attach(entry_token,0,2,3,1);
-		this.attach(button_update,0,3,1,1);
-
-		button_update.clicked.connect(() => {
-			on_update_clicked(entry_token.get_text().strip(), droplet_token);
-			entry_token.set_text("");
-		});
-
-		this.show_all();
-	}
-
-	private void on_update_clicked(string new_token, DropletToken droplet_token) {
-		if (new_token != "") {
-			droplet_token.update_token(new_token);
-			set_token(new_token);
-		}
-	}
-
-	private void set_token(string new_token) {
-		// changes the token in the "Secret Service"
-		var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
-					Secret.SchemaFlags.NONE,
-					"id", Secret.SchemaAttributeType.STRING);
-		var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
-		attributes["id"] = "droplet-oauth";
-		Secret.password_storev.begin (droplet_schema, attributes, Secret.COLLECTION_DEFAULT,
-									  "password", new_token, null, (obj, async_res) => {
-			try {
-				Secret.password_store.end (async_res);
-			} catch (Error e) {
-				message("Unable to store token in keyring: %s", e.message);
-			}
-		});
-	}
-}
-
 
 [ModuleInit]
 public void peas_register_types(TypeModule module) {
