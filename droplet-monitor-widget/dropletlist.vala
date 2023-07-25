@@ -13,7 +13,7 @@ interface DOClient : GLib.Object {
     public signal void no_token ();
 }
 
-class WidgetDropletList: Gtk.ListBox {
+public class WidgetDropletList: Gtk.ListBox {
     private DODroplet[] droplets = {};
     private string token;
     private Gtk.Label placeholder;
