@@ -1,11 +1,11 @@
-namespace DropletMonitorGrid {
+namespace DropletMonitorWidget {
 
-class DropletMonitorGrid : Gtk.Grid {
+public class DropletMonitorGrid : Gtk.Grid {
 
-    private WidgetDropletList.WidgetDropletList droplet_list;
+    private WidgetDropletList droplet_list;
     private Gtk.Widget[] action_widgets = {};
 
-    public DropletMonitorGrid (WidgetDropletList.WidgetDropletList dl) {
+    public DropletMonitorGrid (WidgetDropletList dl) {
 
         this.droplet_list = dl;
 
@@ -70,15 +70,15 @@ class DropletMonitorGrid : Gtk.Grid {
         button_lock.set_always_show_image(true);
 
         button_stop.clicked.connect(() => {
-            send_action(WidgetDOcean.OFF, label_status, button_stop, button_lock);
+            send_action(OFF, label_status, button_stop, button_lock);
         });
 
         button_start.clicked.connect(() => {
-            send_action(WidgetDOcean.ON, label_status, button_start, button_lock);
+            send_action(ON, label_status, button_start, button_lock);
         });
 
         button_reboot.clicked.connect(() => {
-            send_action(WidgetDOcean.REBOOT, label_status, button_reboot, button_lock);
+            send_action(REBOOT, label_status, button_reboot, button_lock);
         });
 
         button_refresh.clicked.connect(() => {
@@ -128,10 +128,10 @@ class DropletMonitorGrid : Gtk.Grid {
     private void send_action (int action, Gtk.Label status, Gtk.Button button, Gtk.ToggleButton lock) {
         if (!droplet_list.has_selected()) return;
         string[] action_name = {"Shutdown", "Startup", "Reboot"};
-        if (action == WidgetDOcean.ON && droplet_list.selected_is_running()) {
+        if (action == ON && droplet_list.selected_is_running()) {
             return;
         }
-        if (action == WidgetDOcean.OFF && !droplet_list.selected_is_running()) {
+        if (action == OFF && !droplet_list.selected_is_running()) {
             return;
         }
         button.set_sensitive(false);

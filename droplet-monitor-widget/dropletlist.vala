@@ -1,8 +1,7 @@
 using Gtk;
 using GLib;
-using WidgetDOcean;
 
-namespace WidgetDropletList {
+namespace DropletMonitorWidget {
 
 [DBus (name = "com.github.samlane_ma.droplet_monitor")]
 interface DOClient : GLib.Object {
@@ -13,7 +12,7 @@ interface DOClient : GLib.Object {
     public signal void no_token ();
 }
 
-class WidgetDropletList: Gtk.ListBox {
+public class WidgetDropletList: Gtk.ListBox {
     private DODroplet[] droplets = {};
     private string token;
     private Gtk.Label placeholder;

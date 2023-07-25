@@ -1,20 +1,89 @@
 
+namespace DropletMonitorWidget {
+
 public class DropletMonitorPlugin : Budgie.RavenPlugin, Peas.ExtensionBase {
 	public Budgie.RavenWidget new_widget_instance(string uuid, GLib.Settings? settings) {
 		return new DropletMonitorWidget(uuid, settings);
 	}
 
 	public bool supports_settings() {
-		return false;
+		return true;
 	}
 }
 
+public class DropletMonitorWidgetSettings: Gtk.Grid  {
+
+	private GLib.Settings? settings;
+
+	public DropletMonitorWidgetSettings(GLib.Settings? settings) {
+
+        this.settings = settings;
+		Gtk.Entry entry_token = new Gtk.Entry();
+		Gtk.LinkButton link = new Gtk.LinkButton.with_label(
+			"https://docs.digitalocean.com/reference/api/create-personal-access-token/",
+			"For info on how to obtain your\npersonal Digital Ocean™ token"
+		);
+
+		this.attach(link,0,0,1,1);
+		Gtk.Label label_token = new Gtk.Label("Droplet Monitor Token:");
+		Gtk.Button button_update = new Gtk.Button();
+		button_update.set_label("Update Token");
+		this.attach(label_token,0,1,1,1);
+		this.attach(entry_token,0,2,3,1);
+		this.attach(button_update,0,3,1,1);
+
+		button_update.clicked.connect(() => {
+			on_update_clicked(entry_token.get_text().strip());
+			entry_token.set_text("");
+		});
+		this.show_all();
+	}
+
+	private void on_update_clicked(string new_token) {
+		DOClient? client = null;
+		try {
+            client = Bus.get_proxy_sync (BusType.SESSION, "com.github.samlane_ma.droplet_monitor",
+                                                          "/com/github/samlane_ma/droplet_monitor");
+        } catch (Error e) {
+
+        }
+		if (new_token != "") {
+			set_token(new_token);
+		}
+
+		client.set_token.begin(new_token, (obj, res) => {
+            try {
+                client.set_token.end(res);
+            } catch (Error e) {
+                message("Unable to set token");
+            }
+        });
+	}
+
+	private void set_token(string new_token) {
+		// changes the token in the "Secret Service"
+		var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
+					Secret.SchemaFlags.NONE,
+					"id", Secret.SchemaAttributeType.STRING);
+		var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
+		attributes["id"] = "droplet-oauth";
+		Secret.password_storev.begin (droplet_schema, attributes, Secret.COLLECTION_DEFAULT,
+									  "password", new_token, null, (obj, async_res) => {
+			try {
+				Secret.password_store.end (async_res);
+			} catch (Error e) {
+				message("Unable to store token in keyring: %s", e.message);
+			}
+		});
+	}
+}
+
+
 public class DropletMonitorWidget : Budgie.RavenWidget {
 
-	private WidgetDropletList.WidgetDropletList droplet_list;
-	private DropletMonitorGrid.DropletMonitorGrid dm_grid;
+	private WidgetDropletList droplet_list;
+	private DropletMonitorGrid dm_grid;
 	private Gtk.Image? icon;
-	private Gtk.Label label_ssh;
 	private string token = "";
 	private string? password;
 	private Gtk.Revealer? content_revealer = null;
@@ -27,7 +96,7 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
 		icon.margin = 4;
 		icon.margin_start = 12;
 		icon.margin_end = 10;
-		droplet_list = new WidgetDropletList.WidgetDropletList(token, icon, label_ssh);
+		droplet_list = new WidgetDropletList(token, icon, label_ssh);
 
         var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
                              Secret.SchemaFlags.NONE,
@@ -78,16 +147,23 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
 		});
 		header.pack_end(header_reveal_button, false, false, 0);
 
-		dm_grid = new DropletMonitorGrid.DropletMonitorGrid(droplet_list);
+		dm_grid = new DropletMonitorGrid(droplet_list);
 		
 		content.add(dm_grid);
 		show_all();
 	}
+
+	public override Gtk.Widget build_settings_ui() {
+        return new DropletMonitorWidgetSettings(get_instance_settings());
+    }
+}
+
 }
 
 [ModuleInit]
 public void peas_register_types(TypeModule module) {
 	// boilerplate - all modules need this
 	var objmodule = module as Peas.ObjectModule;
-	objmodule.register_extension_type(typeof(Budgie.RavenPlugin), typeof(DropletMonitorPlugin));
+	objmodule.register_extension_type(typeof(Budgie.RavenPlugin), typeof(DropletMonitorWidget.DropletMonitorPlugin));
 }
+

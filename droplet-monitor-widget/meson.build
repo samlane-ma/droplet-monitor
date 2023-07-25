@@ -12,7 +12,9 @@ DropletMonitorWidgetDependencies = [
     meson.get_compiler('c').find_library('m', required: false)
 ]
 install_data('DropletMonitorWidget.plugin', install_dir: WIDGET_INSTALL_DIR)
-
+install_data('com.github.samlane-ma.widget.droplet-monitor.gschema.xml',
+    install_dir: SCHEMA_DIR,
+)
 shared_library(WIDGET_ID, DropletMonitorWidgetSources, dependencies: DropletMonitorWidgetDependencies, install: true, install_dir: WIDGET_INSTALL_DIR)
 
 message('Installing applet...')

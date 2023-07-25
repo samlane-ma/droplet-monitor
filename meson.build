@@ -16,7 +16,7 @@ if bindir == 'bin'
 endif
 
 PIXMAPS_DIR = join_paths(datadir, 'pixmaps')
-
+SCHEMA_DIR = join_paths(prefix, 'share', 'glib-2.0', 'schemas')
 LIB_INSTALL_DIR = join_paths(prefix, libdir, 'budgie-desktop', 'plugins', meson.project_name())
 
 message('Installing applet...')
@@ -24,4 +24,6 @@ message('Installing applet...')
 subdir('droplet-monitor-server')
 subdir('droplet-monitor-applet')
 subdir('droplet-monitor-widget')
-subdir('images')
+subdir('icons')
+
+meson.add_install_script('meson_post_install')
