@@ -1,4 +1,4 @@
-project('com.github.samlane-ma.applet.droplet-monitor',
+project('com.github.samlane-ma.droplet-monitor',
         ['vala', 'c'],
         version: '1.1',
         meson_version: '>=0.50.0',
@@ -17,13 +17,9 @@ endif
 
 PIXMAPS_DIR = join_paths(datadir, 'pixmaps')
 SCHEMA_DIR = join_paths(prefix, 'share', 'glib-2.0', 'schemas')
-LIB_INSTALL_DIR = join_paths(prefix, libdir, 'budgie-desktop', 'plugins', meson.project_name())
 
 message('Installing applet...')
 
-subdir('droplet-monitor-server')
+subdir('droplet-monitor-common')
 subdir('droplet-monitor-applet')
 subdir('droplet-monitor-widget')
-subdir('icons')
-
-meson.add_install_script('meson_post_install')

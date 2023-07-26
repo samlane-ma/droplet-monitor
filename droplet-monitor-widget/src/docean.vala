@@ -24,4 +24,5 @@ struct DODroplet {
     //public string size_slug;
     public string size_price_monthly;
 }
+
 }

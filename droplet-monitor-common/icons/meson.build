@@ -1,4 +1,3 @@
-
 install_data(
     'do-server-warn-symbolic.svg',
     'do-server-ok-symbolic.svg',
