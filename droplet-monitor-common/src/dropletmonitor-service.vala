@@ -9,8 +9,13 @@ public class DOServer : Object {
     private string token = "";
     DODroplet[] all_droplets = {};
     private bool empty_once = false;
+    private Soup.Session session;
 
     public DOServer() {
+
+        session = new Soup.Session();
+        session.timeout = 6;
+
         Timeout.add_seconds_full(GLib.Priority.DEFAULT, 15, () => {
             string current = "";
             if (token == "") {
@@ -48,8 +53,6 @@ public class DOServer : Object {
 
     private string get_droplet_list () {
         string output = "";
-        Soup.Session session = new Soup.Session();
-        session.timeout = 10;
         var message = new Soup.Message ("GET", "https://api.digitalocean.com/v2/droplets");
         message.request_headers.append ("Authorization", @"Bearer $token");
         message.add_flags(Soup.MessageFlags .NO_REDIRECT);
@@ -84,8 +87,6 @@ public class DOServer : Object {
             return "invalid type";
         }
 
-        Soup.Session session = new Soup.Session();
-        session.timeout = 10;
         var message = new Soup.Message ("POST", @"https://api.digitalocean.com/v2/droplets/$droplet_id/actions");
         message.set_request_body_from_bytes("application/json", new Bytes(mparams.data));
         message.request_headers.append("Content-Type","application/json");
@@ -102,6 +103,7 @@ public class DOServer : Object {
     [DBus (name = "SetToken")]
     public async void set_token (string token) throws DBusError, IOError {
         this.token = token;
+        token_updated(token);
         update();
     }
 
@@ -110,6 +112,14 @@ public class DOServer : Object {
 
     [DBus (name = "NoToken")]
     public signal void no_token ();
+
+    /* Since the applet and widget use the same token, this simply lets one know if
+     * the other changes the token. Only would matter if for some reason the service
+     * was restarted after updating the token but before a restart of the panel. However,
+     * still best to keep these two in sync.
+     */
+    [DBus (name = "TokenUpdated")]
+    public signal void token_updated (string token);
 }
 
 void on_bus_aquired (DBusConnection conn) {

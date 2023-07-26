@@ -10,6 +10,7 @@ interface DOClient : GLib.Object {
     public abstract async string send_droplet_signal(int mode, string droplet_id) throws GLib.Error;
     public signal void droplets_updated ();
     public signal void no_token ();
+    public signal void token_updated(string newtoken);
 }
 
 public class WidgetDropletList: Gtk.ListBox {
@@ -62,6 +63,10 @@ public class WidgetDropletList: Gtk.ListBox {
          */
         client.no_token.connect(() => {
             update_token(token);
+        });
+
+        client.token_updated.connect((newtoken) => {
+            this.token = newtoken;
         });
     }
 

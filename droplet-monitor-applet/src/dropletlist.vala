@@ -11,6 +11,7 @@ interface DOClient : GLib.Object {
     public abstract async string send_droplet_signal(int mode, string droplet_id) throws GLib.Error;
     public signal void droplets_updated ();
     public signal void no_token ();
+    public signal void token_updated(string newtoken);
 }
 
 class DropletList: Gtk.ListBox {
@@ -51,7 +52,7 @@ class DropletList: Gtk.ListBox {
 
         update_token(token);
 
-        Timeout.add_seconds(5, get_all_droplets);
+        Timeout.add_seconds(60, get_all_droplets);
 
         /* Service will signal if its running without a token. This would
          * most likely only happen if the server is killed and restarted
@@ -60,6 +61,10 @@ class DropletList: Gtk.ListBox {
          */
         client.no_token.connect(() => {
             update_token(token);
+        });
+
+        client.token_updated.connect((newtoken) => {
+            this.token = newtoken;
         });
     }
 
