@@ -1,18 +1,17 @@
 using Gtk;
-using DropletList;
 
-namespace DropletPopover {
+namespace DropletApplet {
 
     public class DropletPopover : Budgie.Popover {
 
-        private DropletList.DropletList droplet_list;
+        private DropletList droplet_list;
          //widgets that lock/unlock
         private Gtk.Widget[] action_widgets = {};
 
         public DropletPopover(Gtk.EventBox relative_parent, string token) {
             Object(relative_to: relative_parent);
 
-            droplet_list = new DropletList.DropletList(token);
+            droplet_list = new DropletList(token);
             Gtk.Grid grid = new Gtk.Grid();
             grid.set_column_homogeneous(true);
             grid.set_column_spacing(10);
@@ -78,15 +77,15 @@ namespace DropletPopover {
             button_lock.set_always_show_image(true);
 
             button_stop.clicked.connect(() => {
-                send_action(DOcean.OFF, label_status, button_stop);
+                send_action(OFF, label_status, button_stop);
             });
 
             button_start.clicked.connect(() => {
-                send_action(DOcean.ON, label_status, button_start);
+                send_action(ON, label_status, button_start);
             });
 
             button_reboot.clicked.connect(() => {
-                send_action(DOcean.REBOOT, label_status, button_reboot);
+                send_action(REBOOT, label_status, button_reboot);
             });
 
             button_refresh.clicked.connect(() => {
@@ -137,10 +136,10 @@ namespace DropletPopover {
         private void send_action (int action, Gtk.Label status, Gtk.Button button) {
             if (!droplet_list.has_selected()) return;
             string[] action_name = {"Shutdown", "Startup", "Reboot"};
-            if (action == DOcean.ON && droplet_list.selected_is_running()) {
+            if (action == ON && droplet_list.selected_is_running()) {
                 return;
             }
-            if (action == DOcean.OFF && !droplet_list.selected_is_running()) {
+            if (action == OFF && !droplet_list.selected_is_running()) {
                 return;
             }
             button.set_sensitive(false);

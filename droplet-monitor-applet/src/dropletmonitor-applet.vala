@@ -24,9 +24,18 @@
 
 
 using Gtk, Gdk;
-using DropletPopover;
 
 namespace DropletApplet {
+
+[DBus (name = "com.github.samlane_ma.droplet_monitor")]
+interface DOClient : GLib.Object {
+    public abstract async DODroplet[] get_droplets () throws GLib.Error;
+    public abstract async void set_token(string token) throws GLib.Error;
+    public abstract async string send_droplet_signal(int mode, string droplet_id) throws GLib.Error;
+    public signal void droplets_updated ();
+    public signal void no_token ();
+    public signal void token_updated(string newtoken);
+}
 
     public class Plugin : Budgie.Plugin, Peas.ExtensionBase {
 
@@ -39,10 +48,10 @@ namespace DropletApplet {
         // this allows Budgie Desktop settings to update the token
         // of an already running applet
 
-        public static DropletPopover.DropletPopover? app_popover;
+        public static DropletPopover? app_popover;
         public static string app_token;
 
-        public void set_popover (DropletPopover.DropletPopover popover) {
+        public void set_popover (DropletPopover popover) {
             app_popover = popover;
         }
 
@@ -119,7 +128,7 @@ namespace DropletApplet {
 
         private Gtk.EventBox widget;
         private Gtk.Image icon;
-        private DropletPopover.DropletPopover? popover = null;
+        private DropletPopover? popover = null;
         private unowned Budgie.PopoverManager? manager = null;
         private string token = "";
         private string? password;
@@ -138,7 +147,7 @@ namespace DropletApplet {
             icon = new Gtk.Image.from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
             widget = new Gtk.EventBox();
             widget.add(icon);
-            popover = new DropletPopover.DropletPopover(widget, token);
+            popover = new DropletPopover(widget, token);
             add(widget);
 
             widget.button_press_event.connect((e)=> {
