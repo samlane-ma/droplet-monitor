@@ -8,10 +8,11 @@ namespace DropletApplet {
          //widgets that lock/unlock
         private Gtk.Widget[] action_widgets = {};
 
-        public DropletPopover(Gtk.EventBox relative_parent, string token) {
+        public DropletPopover(Gtk.EventBox relative_parent, DropletList dl) {
             Object(relative_to: relative_parent);
 
-            droplet_list = new DropletList(token);
+            droplet_list = dl;
+
             Gtk.Grid grid = new Gtk.Grid();
             grid.set_column_homogeneous(true);
             grid.set_column_spacing(10);
@@ -173,15 +174,6 @@ namespace DropletApplet {
         }
 
         // These are here to give parent access to certain methods
-
-        public void update_token (string new_token) {
-            droplet_list.update_token(new_token);
-        }
-
-        public void update_network() {
-            droplet_list.unselect_all();
-            droplet_list.update();
-        }
 
         public void quit_scan() {
             droplet_list.quit_scan();

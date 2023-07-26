@@ -25,7 +25,7 @@ public class WidgetDropletList: Gtk.ListBox {
     private string last_selected = "";
     private string last_ip = "";
     public Gtk.Label? ssh_label = null;
-    private DOClient client = null;
+    private DOClient? client = null;
     private string old_check = "";
 
 

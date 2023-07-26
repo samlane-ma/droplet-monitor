@@ -22,7 +22,6 @@
  *
  */
 
-
 using Gtk, Gdk;
 
 namespace DropletApplet {
@@ -44,41 +43,14 @@ interface DOClient : GLib.Object {
         }
     }
 
-    public class DropletToken : Object {
-        // this allows Budgie Desktop settings to update the token
-        // of an already running applet
-
-        public static DropletPopover? app_popover;
-        public static string app_token;
-
-        public void set_popover (DropletPopover popover) {
-            app_popover = popover;
-        }
-
-        public void update_token(string token) {
-            if (app_popover != null) {
-                app_token = token;
-                app_popover.update_token(app_token);
-            }
-        }
-    }
 
     public class DropletSettings : Gtk.Grid {
 
         GLib.Settings? settings;
 
-        private void on_update_clicked(string new_token, DropletToken droplet_token) {
-            if (new_token != "") {
-                droplet_token.update_token(new_token);
-                set_token(new_token);
-            }
-        }
-
         public DropletSettings(GLib.Settings? settings) {
 
             this.settings = settings;
-
-            DropletToken droplet_token = new DropletToken();
 
             Gtk.Entry entry_token = new Gtk.Entry();
             Gtk.LinkButton link = new Gtk.LinkButton.with_label(
@@ -95,7 +67,7 @@ interface DOClient : GLib.Object {
             this.attach(button_update,0,3,1,1);
 
             button_update.clicked.connect(() => {
-                on_update_clicked(entry_token.get_text().strip(), droplet_token);
+                on_update_clicked(entry_token.get_text().strip());
                 entry_token.set_text("");
             });
 
@@ -119,7 +91,28 @@ interface DOClient : GLib.Object {
             });
         }
 
+        private void on_update_clicked(string new_token) {
+            DOClient? client = null;
+            try {
+                client = Bus.get_proxy_sync (BusType.SESSION, "com.github.samlane_ma.droplet_monitor",
+                                                              "/com/github/samlane_ma/droplet_monitor");
+            } catch (Error e) {
+
+            }
+            if (new_token != "") {
+                set_token(new_token);
+            }
+
+            client.set_token.begin(new_token, (obj, res) => {
+                try {
+                    client.set_token.end(res);
+                } catch (Error e) {
+                    message("Unable to set token");
+                }
+            });
+        }
     }
+
 
     public class DropletApplet : Budgie.Applet {
 
@@ -130,6 +123,7 @@ interface DOClient : GLib.Object {
         private Gtk.Image icon;
         private DropletPopover? popover = null;
         private unowned Budgie.PopoverManager? manager = null;
+        private DropletList? droplet_list = null;
         private string token = "";
         private string? password;
 
@@ -137,6 +131,7 @@ interface DOClient : GLib.Object {
 
         public DropletApplet(string uuid) {
             Object(uuid: uuid);
+            droplet_list = new DropletList(token);
 
             var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
                                  Secret.SchemaFlags.NONE,
@@ -147,7 +142,7 @@ interface DOClient : GLib.Object {
             icon = new Gtk.Image.from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
             widget = new Gtk.EventBox();
             widget.add(icon);
-            popover = new DropletPopover(widget, token);
+            popover = new DropletPopover(widget, droplet_list);
             add(widget);
 
             widget.button_press_event.connect((e)=> {
@@ -164,20 +159,18 @@ interface DOClient : GLib.Object {
 
             // set up the DropletToken class because Budgie Desktop Settings
             // needs it to update the token if applet is running
-            DropletToken droplet_token = new DropletToken();
-            droplet_token.set_popover(popover);
             Secret.password_lookupv.begin (droplet_schema, attributes, null, (obj, async_res) => {
                 try {
                     password = Secret.password_lookup.end (async_res);
                     if (password == null) {
                         password = "";
                     }
+                    droplet_list.update_token(password);
                 } catch (Error e) {
                     message("Unable to retrieve token from keyring: %s", e.message);
                     password = "";
                 }
-                droplet_token.update_token(password);
-            });
+             });
 
             popover.get_child().show_all();
             show_all();

@@ -3,7 +3,7 @@ using GLib;
 
 namespace DropletApplet {
 
-class DropletList: Gtk.ListBox {
+public class DropletList: Gtk.ListBox {
     private DODroplet[] droplets = {};
     private string token;
     private Gtk.Label placeholder;
