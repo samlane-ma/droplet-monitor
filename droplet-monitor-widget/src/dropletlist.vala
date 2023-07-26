@@ -37,7 +37,7 @@ public class WidgetDropletList: Gtk.ListBox {
             client = Bus.get_proxy_sync (BusType.SESSION, "com.github.samlane_ma.droplet_monitor",
                                                           "/com/github/samlane_ma/droplet_monitor");
         } catch (Error e) {
-
+            warning("Unable to get bus");
         }
 
         client.droplets_updated.connect(() => {
@@ -53,7 +53,7 @@ public class WidgetDropletList: Gtk.ListBox {
 
         update_token(token);
 
-        Timeout.add_seconds(5, get_all_droplets);
+        Timeout.add_seconds(60, get_all_droplets);
 
         /* Service will signal if its running without a token. This would
          * most likely only happen if the server is killed and restarted
