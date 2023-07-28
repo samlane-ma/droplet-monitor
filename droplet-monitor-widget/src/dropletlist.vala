@@ -28,7 +28,6 @@ public class WidgetDropletList: Gtk.ListBox {
     private DOClient? client = null;
     private string old_check = "";
 
-
     public WidgetDropletList(string do_token, Gtk.Image status_icon, Gtk.Label label_ssh) {
 
         this.icon = status_icon;
@@ -205,6 +204,8 @@ public class WidgetDropletList: Gtk.ListBox {
             found_count++;
         }
 
+        update_count(found_count);
+
         // choose the correct panel icon
         if (found_count == 0) {
             last_selected = "";
@@ -214,6 +215,7 @@ public class WidgetDropletList: Gtk.ListBox {
         } else {
             icon.set_from_icon_name("do-server-warn-symbolic", Gtk.IconSize.MENU);
         }
+        update_count(found_count);
         this.show_all();
         return false;
     }
@@ -246,6 +248,8 @@ public class WidgetDropletList: Gtk.ListBox {
             });
         }
     }
+
+    public signal void update_count(int count);
 
     public void update() {
         get_all_droplets();

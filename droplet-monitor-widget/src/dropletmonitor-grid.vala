@@ -123,6 +123,13 @@ public class DropletMonitorGrid : Gtk.Grid {
                 run_ssh(entry_ssh.get_text(), droplet_list.ssh_label.get_label());
             }
         });
+
+        droplet_list.update_count.connect((count) => {
+            int size = 25 * count;
+            if (size > 115) size = 125;
+            if (size < 50) size = 50;
+            scrolled.set_size_request(-1, size);
+        });
     }
 
     private void send_action (int action, Gtk.Label status, Gtk.Button button, Gtk.ToggleButton lock) {
