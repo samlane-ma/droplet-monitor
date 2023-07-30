@@ -26,6 +26,8 @@ using Gtk, Gdk;
 
 namespace DropletApplet {
 
+private DropletList droplet_list;
+
 [DBus (name = "com.github.samlane_ma.droplet_monitor")]
 interface DOClient : GLib.Object {
     public abstract async DODroplet[] get_droplets () throws GLib.Error;
@@ -67,7 +69,7 @@ interface DOClient : GLib.Object {
             this.attach(button_update,0,3,1,1);
 
             button_update.clicked.connect(() => {
-                on_update_clicked(entry_token.get_text().strip());
+                set_token(entry_token.get_text().strip());
                 entry_token.set_text("");
             });
 
@@ -75,6 +77,10 @@ interface DOClient : GLib.Object {
         }
 
         private void set_token(string new_token) {
+            if (new_token == "") {
+                return;
+            }
+            droplet_list.update_token(new_token);
             // changes the token in the "Secret Service"
             var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
                         Secret.SchemaFlags.NONE,
@@ -90,27 +96,6 @@ interface DOClient : GLib.Object {
                 }
             });
         }
-
-        private void on_update_clicked(string new_token) {
-            DOClient? client = null;
-            try {
-                client = Bus.get_proxy_sync (BusType.SESSION, "com.github.samlane_ma.droplet_monitor",
-                                                              "/com/github/samlane_ma/droplet_monitor");
-            } catch (Error e) {
-
-            }
-            if (new_token != "") {
-                set_token(new_token);
-            }
-
-            client.set_token.begin(new_token, (obj, res) => {
-                try {
-                    client.set_token.end(res);
-                } catch (Error e) {
-                    message("Unable to set token");
-                }
-            });
-        }
     }
 
 
@@ -123,7 +108,6 @@ interface DOClient : GLib.Object {
         private Gtk.Image icon;
         private DropletPopover? popover = null;
         private unowned Budgie.PopoverManager? manager = null;
-        private DropletList? droplet_list = null;
         private string token = "";
         private string? password;
 
