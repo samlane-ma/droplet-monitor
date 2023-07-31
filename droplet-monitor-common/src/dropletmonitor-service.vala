@@ -17,13 +17,13 @@ public class DOServer : Object {
         session.timeout = 6;
 
         Timeout.add_seconds_full(GLib.Priority.DEFAULT, 15, () => {
-            string current = "";
+            string current = "no data";
             if (token == "") {
                 return true;
             }
-                current = get_droplet_list();
+            current = get_droplet_list();
             if (current != last) {
-                if (current == "" && !empty_once) {
+                if (current == "no data" && !empty_once) {
                     // Don't clear the list unless we get two empty results in a row
                     // Prevents the droplets from clearing due to a one time connection error
                     empty_once = true;
@@ -32,8 +32,8 @@ public class DOServer : Object {
                 last = current;
                 all_droplets = get_droplet_data(current);
                 droplets_updated();
-                empty_once = false;
             }
+            empty_once = false;
             return true;
         });
         Idle.add(() => {
@@ -52,7 +52,7 @@ public class DOServer : Object {
     }
 
     private string get_droplet_list () {
-        string output = "";
+        string output = "no data";
         var message = new Soup.Message ("GET", "https://api.digitalocean.com/v2/droplets");
         message.request_headers.append ("Authorization", @"Bearer $token");
         message.add_flags(Soup.MessageFlags .NO_REDIRECT);
