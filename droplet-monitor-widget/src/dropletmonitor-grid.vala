@@ -14,6 +14,7 @@ public class DropletMonitorGrid : Gtk.Grid {
     private Gtk.Image UNLOCK_IMAGE = new Gtk.Image.from_icon_name(
         "changes-allow-symbolic.symbolic",Gtk.IconSize.MENU);
 
+        
     public DropletMonitorGrid (WidgetDropletList dl) {
 
         this.droplet_list = dl;

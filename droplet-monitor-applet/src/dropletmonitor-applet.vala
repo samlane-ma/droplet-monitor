@@ -128,6 +128,7 @@ interface DOClient : GLib.Object {
             widget.add(icon);
             popover = new DropletPopover(widget, droplet_list);
             add(widget);
+            droplet_list.update_count.connect(on_count_updated);
 
             widget.button_press_event.connect((e)=> {
                 if (e.button != 1) {
@@ -163,6 +164,16 @@ interface DOClient : GLib.Object {
                 // watch_applet will monitor if the applet is removed
                 watch_applet(uuid);
                 return false;});
+        }
+
+        private void on_count_updated(int count, bool all_active) {
+            if (count == 0) {
+                icon.set_from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
+            } else if (all_active) {
+                icon.set_from_icon_name("do-server-ok-symbolic", Gtk.IconSize.MENU);
+            } else {
+                icon.set_from_icon_name("do-server-warn-symbolic", Gtk.IconSize.MENU);
+            }
         }
 
         public override void update_popovers(Budgie.PopoverManager? manager) {
@@ -204,7 +215,7 @@ interface DOClient : GLib.Object {
                      currpanelsubject_settings.changed["applets"].connect(() => {
                         applets = currpanelsubject_settings.get_strv("applets");
                         if (!find_applet(find_uuid, applets)) {
-                            popover.quit_scan();
+                            droplet_list.quit_scan();
                         }
                     });
                 }

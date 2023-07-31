@@ -7,17 +7,18 @@ public class DropletList: Gtk.ListBox {
     private DODroplet[] droplets = {};
     private string token;
     private Gtk.Label placeholder;
-    private Gtk.Image icon;
     private bool stay_running = true;
-
     private string[] running = {};
-    private bool is_selected = false;
-    private string last_selected = "";
-    private string last_ip = "";
-    private Gtk.Label? ssh_label = null;
     private DOClient client = null;
     private string old_check = "";
 
+    /* We update these every time the row_selected signal is emitted.
+     * It is easier (and safer) to get these values later on from here than it
+     * is to get the index of the selected row and then check the droplet_list
+     */
+     private bool selection_made = false;
+     private string selected_droplet = "";
+     private string selected_ip = "";
 
     public DropletList(string do_token) {
 
@@ -57,31 +58,25 @@ public class DropletList: Gtk.ListBox {
         });
     }
 
-    public void set_ssh_label(Gtk.Label label) {
-        ssh_label = label;
-    }
-
     private void update_selected(ListBoxRow? row) {
         if (row != null) {
             if (droplets.length < (row.get_index()+1)) {
+                selection_made = false;
                 return;
             }
-            last_selected = droplets[row.get_index()].id;
-            last_ip = droplets[row.get_index()].public_ipv4;
-            is_selected = true;
-            ssh_label.set_label(last_ip);
-        }
-        else {
-            ssh_label.set_label("");
-            is_selected = false;
+            selected_droplet = droplets[row.get_index()].id;
+            selected_ip = droplets[row.get_index()].public_ipv4;
+            selection_made = true;
+        } else {
+            selection_made = false;
         }
     }
 
     // these allow parent class to add actions
     public void do_action (int action) {
         if (is_empty()) return;
-        if (is_selected) {
-            toggle_selected(last_selected, action);
+        if (selection_made && selected_droplet != "") {
+            toggle_selected(selected_droplet, action);
         }
     }
 
@@ -116,11 +111,6 @@ public class DropletList: Gtk.ListBox {
         return stay_running;
     }
 
-    public void set_update_icon(Gtk.Image icon) {
-        // sets the applet panel icon
-        this.icon = icon;
-    }
-
     private bool is_empty() {
         // returns true if this ListBox is empty
         return (this.get_children() == null);
@@ -128,14 +118,7 @@ public class DropletList: Gtk.ListBox {
 
     public bool has_selected() {
         // returns true if this ListBox has a selected row
-        if (is_empty()) return false;
-        if (this.get_selected_row() == null) {
-            return false;
-        }
-        if (this.get_selected_row().get_index() >= 0) {
-            return true;
-        }
-        return false;
+        return selection_made;
     }
 
     public void update_token(string new_token) {
@@ -192,7 +175,7 @@ public class DropletList: Gtk.ListBox {
             hbox.pack_start(name_label, false, false, 5);
             hbox.pack_end(ip_label, false, false, 5);
             this.insert(hbox, -1);
-            if (last_selected == droplet.id) {
+            if (selected_droplet == droplet.id) {
                 this.select_row(this.get_row_at_index(found_count));
             }
             found_count++;
@@ -200,29 +183,21 @@ public class DropletList: Gtk.ListBox {
 
         // choose the correct panel icon
         if (found_count == 0) {
-            last_selected = "";
-            icon.set_from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
-        } else if (all_active) {
-            icon.set_from_icon_name("do-server-ok-symbolic", Gtk.IconSize.MENU);
-        } else {
-            icon.set_from_icon_name("do-server-warn-symbolic", Gtk.IconSize.MENU);
+            selected_droplet = "";
+            selected_ip = "";
         }
+        update_count(found_count, all_active);
         this.show_all();
         return false;
     }
 
     public string get_selected_ip () {
-        foreach (var droplet in droplets) {
-            if (droplet.id == last_selected) {
-                return droplet.public_ipv4;
-            }
-        }
-        return "";
+        return selected_ip;
     }
 
     public bool selected_is_running() {
         // checks if selection is running so we don't send unneeded signals
-        return (last_selected in running);
+        return (selected_droplet in running);
     }
 
     public void toggle_selected (string selected_droplet, int mode) {
@@ -239,6 +214,8 @@ public class DropletList: Gtk.ListBox {
             });
         }
     }
+
+    public signal void update_count(int count, bool all_active);
 
     public void update() {
         get_all_droplets();

@@ -3,16 +3,6 @@ using GLib;
 
 namespace DropletMonitorWidget {
 
-[DBus (name = "com.github.samlane_ma.droplet_monitor")]
-interface DOClient : GLib.Object {
-    public abstract async DODroplet[] get_droplets () throws GLib.Error;
-    public abstract async void set_token(string token) throws GLib.Error;
-    public abstract async string send_droplet_signal(int mode, string droplet_id) throws GLib.Error;
-    public signal void droplets_updated ();
-    public signal void no_token ();
-    public signal void token_updated(string newtoken);
-}
-
 public class WidgetDropletList: Gtk.ListBox {
     private DODroplet[] droplets = {};
     private string token;
@@ -77,8 +67,7 @@ public class WidgetDropletList: Gtk.ListBox {
             selected_droplet = droplets[row.get_index()].id;
             selected_ip = droplets[row.get_index()].public_ipv4;
             selection_made = true;
-        }
-        else {
+        } else {
             selection_made = false;
         }
     }
