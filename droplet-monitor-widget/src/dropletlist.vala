@@ -17,7 +17,6 @@ public class WidgetDropletList: Gtk.ListBox {
     private DODroplet[] droplets = {};
     private string token;
     private Gtk.Label placeholder;
-    private Gtk.Image icon;
     private bool stay_running = true;
     private string[] running = {};
     private DOClient? client = null;
@@ -31,9 +30,7 @@ public class WidgetDropletList: Gtk.ListBox {
     private string selected_droplet = "";
     private string selected_ip = "";
 
-    public WidgetDropletList(string do_token, Gtk.Image status_icon) {
-
-        this.icon = status_icon;
+    public WidgetDropletList(string do_token) {
 
         try {
             client = Bus.get_proxy_sync (BusType.SESSION, "com.github.samlane_ma.droplet_monitor",
@@ -202,13 +199,8 @@ public class WidgetDropletList: Gtk.ListBox {
         if (found_count == 0) {
             selected_droplet = "";
             selected_ip = "";
-            icon.set_from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
-        } else if (all_active) {
-            icon.set_from_icon_name("do-server-ok-symbolic", Gtk.IconSize.MENU);
-        } else {
-            icon.set_from_icon_name("do-server-warn-symbolic", Gtk.IconSize.MENU);
         }
-        update_count(found_count);
+        update_count(found_count, all_active);
         this.show_all();
         return false;
     }
@@ -233,7 +225,7 @@ public class WidgetDropletList: Gtk.ListBox {
         });
     }
 
-    public signal void update_count(int count);
+    public signal void update_count(int count, bool all_active);
 
     public void update() {
         get_all_droplets();

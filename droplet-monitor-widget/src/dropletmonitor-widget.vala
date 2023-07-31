@@ -63,7 +63,6 @@ public class DropletMonitorWidgetSettings: Gtk.Grid  {
     }
 }
 
-
 public class DropletMonitorWidget : Budgie.RavenWidget {
 
     private DropletMonitorGrid dm_grid;
@@ -81,7 +80,7 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
         icon.margin = 4;
         icon.margin_start = 12;
         icon.margin_end = 10;
-        droplet_list = new WidgetDropletList(token, icon);
+        droplet_list = new WidgetDropletList(token);
 
         var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
                              Secret.SchemaFlags.NONE,
@@ -137,6 +136,8 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
         content.add(dm_grid);
         show_all();
 
+        droplet_list.update_count.connect(on_count_updated);
+
         // This little bit stops the widget from updating after the widget is removed
         widget_settings =  new GLib.Settings("org.buddiesofbudgie.budgie-desktop.raven.widgets");
         source = widget_settings.changed["uuids"].connect(() => {
@@ -145,6 +146,16 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
                 widget_settings.disconnect(source);
             }
         });
+    }
+
+    private void on_count_updated(int count, bool all_active) {
+        if (count == 0) {
+            icon.set_from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
+        } else if (all_active) {
+            icon.set_from_icon_name("do-server-ok-symbolic", Gtk.IconSize.MENU);
+        } else {
+            icon.set_from_icon_name("do-server-warn-symbolic", Gtk.IconSize.MENU);
+        }
     }
 
     public override Gtk.Widget build_settings_ui() {
