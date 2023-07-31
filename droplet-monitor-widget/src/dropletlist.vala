@@ -4,12 +4,11 @@ using GLib;
 namespace DropletMonitorWidget {
 
 public class WidgetDropletList: Gtk.ListBox {
+    private DOClient? client = null;
     private DODroplet[] droplets = {};
     private string token;
-    private Gtk.Label placeholder;
     private bool stay_running = true;
     private string[] running = {};
-    private DOClient? client = null;
     private string old_check = "";
 
     /* We update these every time the row_selected signal is emitted.
@@ -20,8 +19,13 @@ public class WidgetDropletList: Gtk.ListBox {
     private string selected_droplet = "";
     private string selected_ip = "";
 
-    public WidgetDropletList(string do_token) {
+    /* This will signal the widget or applet with the necessary information to
+     * set the proper widget / panel icon, or determine sizes of GUI elements
+     */
+    public signal void update_count(int count, bool all_active);
 
+    public WidgetDropletList(string do_token) {
+        this.token = do_token;
         try {
             client = Bus.get_proxy_sync (BusType.SESSION, "com.github.samlane_ma.droplet_monitor",
                                                           "/com/github/samlane_ma/droplet_monitor");
@@ -33,9 +37,7 @@ public class WidgetDropletList: Gtk.ListBox {
             get_all_droplets();
         });
 
-        this.token = do_token;
-
-        placeholder = new Gtk.Label("  Searching for droplets  \n\n\n");
+        var placeholder = new Gtk.Label("  Searching for droplets  \n\n\n");
         this.set_placeholder(placeholder);
         placeholder.show();
         this.row_selected.connect(update_selected);
@@ -53,11 +55,17 @@ public class WidgetDropletList: Gtk.ListBox {
             update_token(token);
         });
 
+        /* If the applet and widget are running at the same time, and the
+         * other updates the token, we can listen for this change on this
+         * one to make sure the tokens stay in sync between both. A rare
+         * instance, but if the
+         */
         client.token_updated.connect((newtoken) => {
             this.token = newtoken;
         });
     }
 
+    /* This handles updating the droplet list currrent selected data */
     private void update_selected(ListBoxRow? row) {
         if (row != null) {
             if (droplets.length < (row.get_index()+1)) {
@@ -72,7 +80,6 @@ public class WidgetDropletList: Gtk.ListBox {
         }
     }
 
-    // these allow parent class to add actions
     public void do_action (int action) {
         if (is_empty()) return;
         if (selection_made && selected_droplet != "") {
@@ -81,15 +88,13 @@ public class WidgetDropletList: Gtk.ListBox {
     }
 
     public void quit_scan() {
-        // stop thread when applet is removed
+        // stop thread when widget is removed
         stay_running = false;
     }
 
     private bool get_all_droplets () {
 
         string this_check = "";  // current GET request
-
-        // Regular update if correct cycle or if extra checks needed
         droplets = {};
 
         client.get_droplets.begin((obj, res) => {
@@ -97,6 +102,10 @@ public class WidgetDropletList: Gtk.ListBox {
                 var droplet_check = client.get_droplets.end(res);
                 droplets = droplet_check;
                 foreach (var droplet in droplets) {
+                    /* We are forming a string based on the current check. If the current check
+                     * matches the last one, we know nothing significant has changed and therefore
+                     * we don't need to waste time recreating all the GUI list elements
+                     */
                     this_check += @"$(droplet.name)_$(droplet.status)_$(droplet.public_ipv4)_";
                 }
                 if (old_check != this_check) {
@@ -104,6 +113,7 @@ public class WidgetDropletList: Gtk.ListBox {
                     old_check = this_check;
                 }
             } catch (Error e) {
+                // Something went wrong, we need to clear the list
                 update_gui(droplets);
                 old_check = "";
             }
@@ -183,8 +193,6 @@ public class WidgetDropletList: Gtk.ListBox {
             }
             found_count++;
         }
-
-        // choose the correct panel icon
         if (found_count == 0) {
             selected_droplet = "";
             selected_ip = "";
@@ -195,6 +203,7 @@ public class WidgetDropletList: Gtk.ListBox {
     }
 
     public string get_selected_ip () {
+        // checks if selection is running so we don't send unneeded signals
         return selected_ip;
     }
 
@@ -203,6 +212,9 @@ public class WidgetDropletList: Gtk.ListBox {
         return (selected_droplet in running);
     }
 
+    /* This is responsible for actually sending the droplet id and the action
+     * to be performed to the service. Mode can be ON, OFF, or REBOOT
+     */
     private void toggle_selected (string selected_droplet, int mode) {
         // sends the action to the selected droplet
         client.send_droplet_signal.begin(mode, selected_droplet, (obj, res) => {
@@ -213,8 +225,6 @@ public class WidgetDropletList: Gtk.ListBox {
             }
         });
     }
-
-    public signal void update_count(int count, bool all_active);
 
     public void update() {
         get_all_droplets();
