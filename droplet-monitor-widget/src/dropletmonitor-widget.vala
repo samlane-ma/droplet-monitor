@@ -68,19 +68,20 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
 
     private DropletMonitorGrid dm_grid;
     private Gtk.Image? icon;
+    private GLib.Settings widget_settings;
     private string token = "";
     private string? password;
     private Gtk.Revealer? content_revealer = null;
+    private ulong source;
 
     public DropletMonitorWidget(string uuid, GLib.Settings? settings) {
         initialize(uuid, settings);
 
-        Gtk.Label label_ssh = new Gtk.Label("");
         icon = new Gtk.Image.from_icon_name("do-server-ok-symbolic", Gtk.IconSize.MENU);
         icon.margin = 4;
         icon.margin_start = 12;
         icon.margin_end = 10;
-        droplet_list = new WidgetDropletList(token, icon, label_ssh);
+        droplet_list = new WidgetDropletList(token, icon);
 
         var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
                              Secret.SchemaFlags.NONE,
@@ -135,6 +136,15 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
 
         content.add(dm_grid);
         show_all();
+
+        // This little bit stops the widget from updating after the widget is removed
+        widget_settings =  new GLib.Settings("org.buddiesofbudgie.budgie-desktop.raven.widgets");
+        source = widget_settings.changed["uuids"].connect(() => {
+            if (!(uuid in widget_settings.get_strv("uuids"))) {
+                droplet_list.quit_scan();
+                widget_settings.disconnect(source);
+            }
+        });
     }
 
     public override Gtk.Widget build_settings_ui() {

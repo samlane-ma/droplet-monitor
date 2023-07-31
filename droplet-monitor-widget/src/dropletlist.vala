@@ -19,19 +19,21 @@ public class WidgetDropletList: Gtk.ListBox {
     private Gtk.Label placeholder;
     private Gtk.Image icon;
     private bool stay_running = true;
-
     private string[] running = {};
-    private bool is_selected = false;
-    private string last_selected = "";
-    private string last_ip = "";
-    public Gtk.Label? ssh_label = null;
     private DOClient? client = null;
     private string old_check = "";
 
-    public WidgetDropletList(string do_token, Gtk.Image status_icon, Gtk.Label label_ssh) {
+    /* We update these every time the row_selected signal is emitted.
+     * It is easier (and safer) to get these values later on from here than it
+     * is to get the index of the selected row and then check the droplet_list
+     */
+    private bool selection_made = false;
+    private string selected_droplet = "";
+    private string selected_ip = "";
+
+    public WidgetDropletList(string do_token, Gtk.Image status_icon) {
 
         this.icon = status_icon;
-        this.ssh_label = label_ssh;
 
         try {
             client = Bus.get_proxy_sync (BusType.SESSION, "com.github.samlane_ma.droplet_monitor",
@@ -72,24 +74,23 @@ public class WidgetDropletList: Gtk.ListBox {
     private void update_selected(ListBoxRow? row) {
         if (row != null) {
             if (droplets.length < (row.get_index()+1)) {
+                selection_made = false;
                 return;
             }
-            last_selected = droplets[row.get_index()].id;
-            last_ip = droplets[row.get_index()].public_ipv4;
-            is_selected = true;
-            ssh_label.set_label(last_ip);
+            selected_droplet = droplets[row.get_index()].id;
+            selected_ip = droplets[row.get_index()].public_ipv4;
+            selection_made = true;
         }
         else {
-            ssh_label.set_label("");
-            is_selected = false;
+            selection_made = false;
         }
     }
 
     // these allow parent class to add actions
     public void do_action (int action) {
         if (is_empty()) return;
-        if (is_selected) {
-            toggle_selected(last_selected, action);
+        if (selection_made && selected_droplet != "") {
+            toggle_selected(selected_droplet, action);
         }
     }
 
@@ -131,14 +132,7 @@ public class WidgetDropletList: Gtk.ListBox {
 
     public bool has_selected() {
         // returns true if this ListBox has a selected row
-        if (is_empty()) return false;
-        if (this.get_selected_row() == null) {
-            return false;
-        }
-        if (this.get_selected_row().get_index() >= 0) {
-            return true;
-        }
-        return false;
+        return selection_made;
     }
 
     public void update_token(string new_token) {
@@ -198,17 +192,16 @@ public class WidgetDropletList: Gtk.ListBox {
             hbox.pack_start(ip_label, false, false, 0);
             hbox.pack_start(name_label, false, false, 0);
             this.insert(hbox, -1);
-            if (last_selected == droplet.id) {
+            if (selected_droplet == droplet.id) {
                 this.select_row(this.get_row_at_index(found_count));
             }
             found_count++;
         }
 
-        update_count(found_count);
-
         // choose the correct panel icon
         if (found_count == 0) {
-            last_selected = "";
+            selected_droplet = "";
+            selected_ip = "";
             icon.set_from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
         } else if (all_active) {
             icon.set_from_icon_name("do-server-ok-symbolic", Gtk.IconSize.MENU);
@@ -221,32 +214,23 @@ public class WidgetDropletList: Gtk.ListBox {
     }
 
     public string get_selected_ip () {
-        foreach (var droplet in droplets) {
-            if (droplet.id == last_selected) {
-                return droplet.public_ipv4;
-            }
-        }
-        return "";
+        return selected_ip;
     }
 
     public bool selected_is_running() {
         // checks if selection is running so we don't send unneeded signals
-        return (last_selected in running);
+        return (selected_droplet in running);
     }
 
-    public void toggle_selected (string selected_droplet, int mode) {
+    private void toggle_selected (string selected_droplet, int mode) {
         // sends the action to the selected droplet
-        if (is_empty()) return;
-        int current_selected = this.get_selected_row().get_index();
-        if (current_selected >= 0) {
-            client.send_droplet_signal.begin(mode, selected_droplet, (obj, res) => {
-                try {
-                    client.send_droplet_signal.end(res);
-                } catch (Error e) {
-                    message("Unable to send signal");
-                }
-            });
-        }
+        client.send_droplet_signal.begin(mode, selected_droplet, (obj, res) => {
+            try {
+                client.send_droplet_signal.end(res);
+            } catch (Error e) {
+                message("Unable to send signal");
+            }
+        });
     }
 
     public signal void update_count(int count);
