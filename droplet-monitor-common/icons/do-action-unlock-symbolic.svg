@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   id="svg2394"
+   viewBox="0 0 500 500"
+   version="1.0"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09, custom)"
+   sodipodi:docname="do-action-unlock-symbolic.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs25" />
+  <sodipodi:namedview
+     id="namedview23"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:lockguides="false"
+     inkscape:zoom="1.68"
+     inkscape:cx="302.38095"
+     inkscape:cy="272.61905"
+     inkscape:window-width="1920"
+     inkscape:window-height="1015"
+     inkscape:window-x="0"
+     inkscape:window-y="37"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2394" />
+  <path
+     id="path14"
+     style="fill:#2c2c2c;fill-rule:evenodd"
+     d="m 253.22266,31.269531 c -63.72994,-0.002 -115.39063,51.660923 -115.39063,115.380859 0,1.15284 0.0167,31.27184 0.0488,43.43945 0.0512,19.39033 0.14245,73.98458 0.27148,75.79102 h -15.58984 -0.002 c -14.12999,0 -25.558597,11.43837 -25.558597,25.56836 v 155.5 H 409.43164 v -155.5 c 0,-14.12999 -11.43056,-25.56836 -25.56055,-25.56836 h -11.7539 v 0.0469 l -73.5918,-0.21289 c -0.002,0.0121 -0.004,0.15551 -0.006,0.16602 h -90.60937 c -0.30927,-1.58501 -0.53654,-51.6012 -0.67774,-69.72266 -0.11448,-14.69126 -0.17187,-48.13775 -0.17187,-49.50781 0,-25.48997 20.67018,-46.15039 46.16015,-46.15039 25.48998,0 46.14844,20.66042 46.14844,46.15039 0,1.44296 -0.0795,22.91549 -0.20508,41.41992 l 69.36914,-0.0781 c 0.0458,-15.85578 0.0684,-39.94424 0.0684,-41.3418 0,-63.719936 -51.65897,-115.380859 -115.3789,-115.380859 z M 97.357422,464.69922 c -0.01199,12.27796 12.533138,21.31055 25.203128,21.31055 h 261.30859 c 12.66999,0 23.18094,-9.20056 25.21094,-21.31055 l -311.720705,-2 z"
+     sodipodi:nodetypes="cssccssccsscccccssssccsccsscccs" />
+  <metadata
+     id="metadata20">
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/publicdomain/" />
+        <dc:publisher>
+          <cc:Agent
+             rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:date>2010-06-25T17:53:36</dc:date>
+        <dc:description>a simple padlock icon</dc:description>
+        <dc:source>https://openclipart.org/detail/68533/padlock-icon-by-jaschon</dc:source>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>jaschon</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>black</rdf:li>
+            <rdf:li>black and white</rdf:li>
+            <rdf:li>key</rdf:li>
+            <rdf:li>keyhole</rdf:li>
+            <rdf:li>lock</rdf:li>
+            <rdf:li>padlock</rdf:li>
+            <rdf:li>security</rdf:li>
+            <rdf:li>silhouette</rdf:li>
+            <rdf:li>symbol</rdf:li>
+            <rdf:li>tool</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/publicdomain/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

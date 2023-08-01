@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:ns1="http://sozi.baierouge.fr" xmlns:xlink="http://www.w3.org/1999/xlink" id="svg2394" viewBox="0 0 500 500" version="1.0" inkscape:version="0.91 r13725">
+  <g id="layer1">
+    <path id="path14" style="fill-rule:evenodd;fill:#2c2c2c" d="m97.357 434.7c2.024 12.11 12.533 21.31 25.203 21.31h261.31c12.67 0 23.18-9.2 25.21-21.31h-311.72zm25.203-198.82c-14.13 0-25.558 11.44-25.558 25.57v155.5h312.43v-155.5c0-14.13-11.43-25.57-25.56-25.57h-15.59c0.22-2.94 0.32-66.24 0.32-69.23 0-63.72-51.66-115.38-115.38-115.38-63.73-0.002-115.39 51.66-115.39 115.38 0 2.99 0.11 66.29 0.32 69.23h-15.59zm175.96 0h-90.61c-0.56-2.87-0.85-66.17-0.85-69.23 0-25.49 20.67-46.15 46.16-46.15s46.15 20.66 46.15 46.15c0 3.06-0.28 66.36-0.85 69.23z"/>
+  </g>
+  <metadata>
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <cc:license rdf:resource="http://creativecommons.org/licenses/publicdomain/"/>
+        <dc:publisher>
+          <cc:Agent rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title>Padlock Icon</dc:title>
+        <dc:date>2010-06-25T17:53:36</dc:date>
+        <dc:description>a simple padlock icon</dc:description>
+        <dc:source>https://openclipart.org/detail/68533/padlock-icon-by-jaschon</dc:source>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>jaschon</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>black</rdf:li>
+            <rdf:li>black and white</rdf:li>
+            <rdf:li>key</rdf:li>
+            <rdf:li>keyhole</rdf:li>
+            <rdf:li>lock</rdf:li>
+            <rdf:li>padlock</rdf:li>
+            <rdf:li>security</rdf:li>
+            <rdf:li>silhouette</rdf:li>
+            <rdf:li>symbol</rdf:li>
+            <rdf:li>tool</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+      <cc:License rdf:about="http://creativecommons.org/licenses/publicdomain/">
+        <cc:permits rdf:resource="http://creativecommons.org/ns#Reproduction"/>
+        <cc:permits rdf:resource="http://creativecommons.org/ns#Distribution"/>
+        <cc:permits rdf:resource="http://creativecommons.org/ns#DerivativeWorks"/>
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

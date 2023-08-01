@@ -10,9 +10,9 @@ public class DropletMonitorGrid : Gtk.Grid {
     private Gtk.ToggleButton button_lock;
 
     private Gtk.Image LOCK_IMAGE = new Gtk.Image.from_icon_name(
-        "changes-prevent-symbolic.symbolic",Gtk.IconSize.MENU);
+        "do-action-lock-symbolic",Gtk.IconSize.MENU);
     private Gtk.Image UNLOCK_IMAGE = new Gtk.Image.from_icon_name(
-        "changes-allow-symbolic.symbolic",Gtk.IconSize.MENU);
+        "do-action-unlock-symbolic",Gtk.IconSize.MENU);
 
         
     public DropletMonitorGrid (WidgetDropletList dl) {
@@ -146,8 +146,8 @@ public class DropletMonitorGrid : Gtk.Grid {
 
     private void on_count_updated(int count) {
         int size = 25 * count;
-        if (size > 115) size = 130;
-        if (size < 52) size = 52;
+        if (size > 100) size = 105;
+        if (size < 50) size = 50;
         scrolled.set_size_request(-1, size);
     }
 
@@ -188,7 +188,6 @@ public class DropletMonitorGrid : Gtk.Grid {
             warning ("Error launching ssh: %s", e.message);
         }
     }
-
 }
 
 }

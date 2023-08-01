@@ -9,9 +9,9 @@ namespace DropletApplet {
         private Gtk.ToggleButton button_lock;
 
         private Gtk.Image LOCK_IMAGE = new Gtk.Image.from_icon_name(
-            "changes-prevent-symbolic.symbolic",Gtk.IconSize.MENU);
+            "do-action-lock-symbolic",Gtk.IconSize.MENU);
         private Gtk.Image UNLOCK_IMAGE = new Gtk.Image.from_icon_name(
-            "changes-allow-symbolic.symbolic",Gtk.IconSize.MENU);
+            "do-action-unlock-symbolic",Gtk.IconSize.MENU);
 
 
         public DropletPopover(Gtk.EventBox relative_parent, DropletList dl) {

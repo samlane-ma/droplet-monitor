@@ -21,7 +21,7 @@ Dependencies
 * budgie-1.0
 * gdk-3.0
 * libpeas-gtk-1.0
-* libcurl
+* libsoup-3.0
 * json-glib-1.0
 * libsecret-1
 
@@ -38,11 +38,9 @@ To install (for Debian/Ubuntu):
 * for other distros omit libdir or specify the location of the distro library folder
 
 This will:
-* install plugin files to the Budgie Desktop plugins folder
+* install the applet to the applet plugin folder
+* install the widget to the widget plugin folder
+* install the icons to the pixmap folder
+* install and complile the schemas
 
-This version of Droplet Monitor drops libsoup2.4 and uses libcurl instead, to avoid
-any conflicts during a transition to libsoup3 (as it is impossible to have an applet
-that uses libsoup2.4 and an applet that uses libsoup3 on the panel at the same time).
-
-It makes use of parts of the curl-vala project by Richard Wiedenhöft.
-https://github.com/Richard-W/curl-vala
+All icons included in droplet-monitor-common/icons/ are public domain.
