@@ -23,3 +23,5 @@ message('Installing applet...')
 subdir('droplet-monitor-common')
 subdir('droplet-monitor-applet')
 subdir('droplet-monitor-widget')
+
+meson.add_install_script('meson_post_install')

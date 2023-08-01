@@ -12,6 +12,7 @@ public class DropletList: Gtk.ListBox {
     private string old_check = "";
     private bool sort_by_status = true;
     private bool sort_offline_first = true;
+    private bool sort_ascending = true;
 
     /* We update these every time the row_selected signal is emitted.
      * It is easier (and safer) to get these values later on from here than it
@@ -105,28 +106,35 @@ public class DropletList: Gtk.ListBox {
         stay_running = false;
     }
 
+    public void change_sort(bool ascending, bool by_status, bool offline_first=true) {
+        sort_by_status = by_status;
+        sort_offline_first = offline_first;
+        sort_ascending = ascending;
+        update();
+    }
+
     private int sort_droplets(ListBoxRow r1, ListBoxRow r2) {
         // If sort by status is enabled, sort that way first, then by name
-        var box1 = (Gtk.Box) r1.get_child();
-        var box2 = (Gtk.Box) r2.get_child();
-        var widgets1 = box1.get_children();
-        var widgets2 = box2.get_children();
-        var icon1 = (Gtk.Image) widgets1.nth_data(0);
-        var icon2 = (Gtk.Image) widgets2.nth_data(0);
-        var label1 = (Gtk.Label) widgets1.nth_data(1);
-        var label2 = (Gtk.Label) widgets2.nth_data(1);
-        string icon_name1;
-        IconSize icon_size1;
-        string icon_name2;
-        IconSize icon_size2;
-        icon1.get_icon_name(out icon_name1, out icon_size1);
-        icon2.get_icon_name(out icon_name2, out icon_size2);
-        int online1 = (int) icon_name1.contains("online");
-        int online2 = (int) icon_name2.contains("online");
-        if (online1 != online2 && sort_by_status) {
-            return sort_offline_first ? (online1 - online2) : (online2 - online1);
+        int[] online= {};
+        string[] name = {};
+        ListBoxRow[] row = {r1, r2};
+        for (int i = 0; i < 2; i++) {
+            var box = (Gtk.Box) row[i].get_child();
+            var widgets = box.get_children();
+            var icon = (Gtk.Image) widgets.nth_data(0);
+            var label = (Gtk.Label) widgets.nth_data(1);
+            string icon_name;
+            IconSize icon_size;
+            icon.get_icon_name(out icon_name, out icon_size);
+            int is_on = (int) icon_name.contains("online");
+            string this_name = label.get_label().up();
+            online += is_on;
+            name += this_name;
+        }
+        if (online[0] != online[1] && sort_by_status) {
+            return sort_offline_first ? (online[0] - online[1]) : (online[1] - online[0]);
         } else {
-            return strcmp(label1.get_label(), label2.get_label());
+            return sort_ascending ? strcmp(name[0], name[1]) : 0;
         }
     }
 

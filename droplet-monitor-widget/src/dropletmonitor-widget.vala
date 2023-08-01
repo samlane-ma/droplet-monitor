@@ -43,12 +43,54 @@ public class DropletMonitorWidgetSettings: Gtk.Grid  {
         this.attach(label_token,0,1,1,1);
         this.attach(entry_token,0,2,3,1);
         this.attach(button_update,0,3,1,1);
+        this.attach(new Gtk.Label(""), 0, 4, 3, 1);
+        Gtk.Label label_sort = new Gtk.Label("Sort Order:");
+        label_sort.set_halign(Gtk.Align.START);
+        this.attach(label_sort, 0, 5, 1, 1);
+        
+        Gtk.RadioButton button_name = new Gtk.RadioButton.with_label_from_widget (null, "Sort by Name");
+        attach(button_name, 0, 6, 3, 1);
+        Gtk.RadioButton button_offline_first = new Gtk.RadioButton.with_label_from_widget (button_name, "Sort Offline First");
+        attach(button_offline_first, 0, 7, 3, 1);
+        Gtk.RadioButton button_online_first = new Gtk.RadioButton.with_label_from_widget (button_name, "Sort Online First");
+        attach(button_online_first, 0, 8, 3, 1);
+
+        var sort_offline_first = settings.get_boolean("sort-offline-first");
+        var sort_by_status = settings.get_boolean("sort-by-status");
+        if (sort_by_status) {
+            if (sort_offline_first) {
+                button_offline_first.set_active(true);
+            } else {
+                button_online_first.set_active(true);
+            }
+        } else {
+            button_name.set_active(true);
+        }
+
+        button_name.toggled.connect (sort_toggled);
+        button_offline_first.toggled.connect (sort_toggled);
+        button_online_first.toggled.connect (sort_toggled);
 
         button_update.clicked.connect(() => {
             set_token(entry_token.get_text().strip());
             entry_token.set_text("");
         });
         this.show_all();
+    }
+
+    private void sort_toggled (Gtk.ToggleButton button) {
+        if (button.get_active() == false) {
+            return;
+        }
+        if (button.label == "Sort by Name") {
+            settings.set_boolean("sort-by-status", false);
+        } else if (button.label == "Sort Offline First") {
+            settings.set_boolean("sort-by-status", true);
+            settings.set_boolean("sort-offline-first", true);
+        } else {
+            settings.set_boolean("sort-by-status", true);
+            settings.set_boolean("sort-offline-first", false);
+        }
     }
 
     private void set_token(string new_token) {
@@ -147,6 +189,17 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
         show_all();
 
         droplet_list.update_count.connect(on_count_updated);
+
+        var sort_by_status = settings.get_boolean("sort-by-status");
+        var sort_offline_first = settings.get_boolean("sort-offline-first");
+        droplet_list.change_sort(true, sort_by_status, sort_offline_first);
+
+        settings.changed.connect(() => {
+            droplet_list.change_sort(true,
+                settings.get_boolean("sort-by-status"),
+                settings.get_boolean("sort-offline-first"));
+        });
+
 
         // This little bit stops the widget from updating after the widget is removed
         widget_settings =  new GLib.Settings("org.buddiesofbudgie.budgie-desktop.raven.widgets");

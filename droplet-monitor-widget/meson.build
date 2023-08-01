@@ -3,5 +3,3 @@ WIDGET_INSTALL_DIR = join_paths(prefix, libdir, 'budgie-desktop', 'raven-plugins
 
 subdir('src')
 subdir('data')
-
-meson.add_install_script('meson_post_install')
