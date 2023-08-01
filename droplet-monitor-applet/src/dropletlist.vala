@@ -10,6 +10,8 @@ public class DropletList: Gtk.ListBox {
     private bool stay_running = true;
     private string[] running = {};
     private string old_check = "";
+    private bool sort_by_status = true;
+    private bool sort_offline_first = true;
 
     /* We update these every time the row_selected signal is emitted.
      * It is easier (and safer) to get these values later on from here than it
@@ -63,21 +65,32 @@ public class DropletList: Gtk.ListBox {
         client.token_updated.connect((newtoken) => {
             this.token = newtoken;
         });
+        this.set_sort_func(sort_droplets);
     }
 
     /* This handles updating the droplet list currrent selected data */
     private void update_selected(ListBoxRow? row) {
         if (row != null) {
-            if (droplets.length < (row.get_index()+1)) {
-                selection_made = false;
+            var box = (Gtk.Box) row.get_child();
+            var widgets = box.get_children();
+            var label2 = (Gtk.Label) widgets.nth_data(2);
+            var ip_address = label2.get_label();
+            string id = "";
+            foreach (var droplet in droplets) {
+                if (droplet.public_ipv4 == ip_address) {
+                    id = droplet.id;
+                }
+            }
+            if (id != "") {
+                selected_ip = ip_address;
+                selected_droplet = id;
+                selection_made = true;
                 return;
             }
-            selected_droplet = droplets[row.get_index()].id;
-            selected_ip = droplets[row.get_index()].public_ipv4;
-            selection_made = true;
-        } else {
-            selection_made = false;
         }
+        selected_ip = "";
+        selected_droplet = "";
+        selection_made = false;
     }
 
     public void do_action (int action) {
@@ -90,6 +103,31 @@ public class DropletList: Gtk.ListBox {
     public void quit_scan() {
         // stop thread when applet is removed
         stay_running = false;
+    }
+
+    private int sort_droplets(ListBoxRow r1, ListBoxRow r2) {
+        // If sort by status is enabled, sort that way first, then by name
+        var box1 = (Gtk.Box) r1.get_child();
+        var box2 = (Gtk.Box) r2.get_child();
+        var widgets1 = box1.get_children();
+        var widgets2 = box2.get_children();
+        var icon1 = (Gtk.Image) widgets1.nth_data(0);
+        var icon2 = (Gtk.Image) widgets2.nth_data(0);
+        var label1 = (Gtk.Label) widgets1.nth_data(1);
+        var label2 = (Gtk.Label) widgets2.nth_data(1);
+        string icon_name1;
+        IconSize icon_size1;
+        string icon_name2;
+        IconSize icon_size2;
+        icon1.get_icon_name(out icon_name1, out icon_size1);
+        icon2.get_icon_name(out icon_name2, out icon_size2);
+        int online1 = (int) icon_name1.contains("online");
+        int online2 = (int) icon_name2.contains("online");
+        if (online1 != online2 && sort_by_status) {
+            return sort_offline_first ? (online1 - online2) : (online2 - online1);
+        } else {
+            return strcmp(label1.get_label(), label2.get_label());
+        }
     }
 
     private bool get_all_droplets () {
@@ -223,6 +261,7 @@ public class DropletList: Gtk.ListBox {
     }
 
     public void update() {
+        old_check = "";
         get_all_droplets();
     }
 

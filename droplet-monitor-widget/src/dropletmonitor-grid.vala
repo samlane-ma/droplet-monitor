@@ -140,7 +140,7 @@ public class DropletMonitorGrid : Gtk.Grid {
             lockbutton.set_image(LOCK_IMAGE);
         }
         foreach (Gtk.Widget w in action_widgets) {
-            w.set_sensitive(lockbutton.active);
+            w.set_sensitive(lockbutton.active && droplet_list.has_selected());
         }
     }
 
