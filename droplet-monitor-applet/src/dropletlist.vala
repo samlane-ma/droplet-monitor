@@ -138,7 +138,12 @@ public class DropletList: Gtk.ListBox {
         }
     }
 
-    private int highlight_row(string ip) {
+    /* When a droplet's sort order is changed (i.e when its powered on or off),
+     * the index is no longer the same as before, so we need to search through the
+     * listbox to find the right row. We do this by finding the row with the IP
+     * address that matches the IP address of the last entry selected.
+     */
+     private int get_selected_index(string ip) {
         int i = 0;
         foreach (Gtk.Widget child in this.get_children()) {
             ListBoxRow row = (ListBoxRow) child;
@@ -258,7 +263,7 @@ public class DropletList: Gtk.ListBox {
             selected_droplet = "";
             selected_ip = "";
         } else {
-            int hl_row = highlight_row(saved_droplet);
+            int hl_row = get_selected_index(saved_droplet);
             if (hl_row >= 0) {
                 this.select_row(this.get_row_at_index(hl_row));
             }
