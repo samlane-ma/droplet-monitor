@@ -1,12 +1,12 @@
-# Budgie Droplet Monitor Applet
+# Budgie Droplet Monitor Applet and Widget
 
 ## Monitor Digital Ocean Droplets for the Budgie Panel
 
-### This applet is not associated in any way with DigitalOcean, LLC
-### This applet will allow you to see the status of, start, and stop droplets
+### This project is not associated in any way with DigitalOcean, LLC
+### The provided applet and widget will allow you to see the status of, start, and stop droplets
 
 ![Image 1](images/img1.png)
-
+    
 ![Image 2](images/img2.png)
 
 The applet requires a token provided by Digital Ocean.
@@ -43,4 +43,3 @@ This will:
 * install the icons to the pixmap folder
 * install and complile the schemas
 
-All icons included in droplet-monitor-common/icons/ are public domain.

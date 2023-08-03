@@ -138,6 +138,28 @@ public class WidgetDropletList: Gtk.ListBox {
         }
     }
 
+
+    /* When a droplet's sort order is changed (i.e when its powered on or off),
+     * the index is no longer the same as before, so we need to search through the
+     * listbox to find the right row. We do this by finding the row with the IP
+     * address that matches the IP address of the last entry selected.
+     */
+    private int get_selected_index(string ip) {
+        int i = 0;
+        foreach (Gtk.Widget child in this.get_children()) {
+            ListBoxRow row = (ListBoxRow) child;
+            var box = (Gtk.Box) row.get_child();
+            var widgets = box.get_children();
+            var ip_addr = (Gtk.Label) widgets.nth_data(1);
+            string check_address = ip_addr.get_label();
+            if (check_address == ip) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
+
     private bool get_all_droplets () {
 
         string this_check = "";  // current GET request
@@ -193,6 +215,8 @@ public class WidgetDropletList: Gtk.ListBox {
     private bool update_gui (DODroplet[] droplet_list) {
         // Must be done from Idle so we don't crash the panel
 
+        var saved_droplet = selected_ip;
+
         if (!stay_running) {
             // if the app is removed before the callback (rare but possible)
             // lets bail on the update
@@ -234,14 +258,16 @@ public class WidgetDropletList: Gtk.ListBox {
             hbox.pack_start(ip_label, false, false, 0);
             hbox.pack_start(name_label, false, false, 0);
             this.insert(hbox, -1);
-            if (selected_droplet == droplet.id) {
-                this.select_row(this.get_row_at_index(found_count));
-            }
             found_count++;
         }
         if (found_count == 0) {
             selected_droplet = "";
             selected_ip = "";
+        } else {
+            int hl_row = get_selected_index(saved_droplet);
+            if (hl_row >= 0) {
+                this.select_row(this.get_row_at_index(hl_row));
+            }
         }
         update_count(found_count, all_active);
         this.show_all();
