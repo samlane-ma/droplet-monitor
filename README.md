@@ -35,6 +35,8 @@ To install (for Debian/Ubuntu):
     ninja -v
     sudo ninja install
 
+* To build just the applet, use -Dbuild-applet-only=true
+* To build just the widget, use -Dbuild-widget-only=true
 * for other distros omit libdir or specify the location of the distro library folder
 
 This will:
