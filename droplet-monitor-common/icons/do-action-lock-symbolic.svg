@@ -1,49 +1,84 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:svg="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:ns1="http://sozi.baierouge.fr" xmlns:xlink="http://www.w3.org/1999/xlink" id="svg2394" viewBox="0 0 500 500" version="1.0" inkscape:version="0.91 r13725">
-  <g id="layer1">
-    <path id="path14" style="fill-rule:evenodd;fill:#2c2c2c" d="m97.357 434.7c2.024 12.11 12.533 21.31 25.203 21.31h261.31c12.67 0 23.18-9.2 25.21-21.31h-311.72zm25.203-198.82c-14.13 0-25.558 11.44-25.558 25.57v155.5h312.43v-155.5c0-14.13-11.43-25.57-25.56-25.57h-15.59c0.22-2.94 0.32-66.24 0.32-69.23 0-63.72-51.66-115.38-115.38-115.38-63.73-0.002-115.39 51.66-115.39 115.38 0 2.99 0.11 66.29 0.32 69.23h-15.59zm175.96 0h-90.61c-0.56-2.87-0.85-66.17-0.85-69.23 0-25.49 20.67-46.15 46.16-46.15s46.15 20.66 46.15 46.15c0 3.06-0.28 66.36-0.85 69.23z"/>
+
+<svg
+   width="200"
+   height="200"
+   viewBox="0 0 52.916665 52.916666"
+   version="1.1"
+   id="svg6245"
+   sodipodi:docname="do-action-lock-symbolic.svg"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview6247"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showgrid="false"
+     inkscape:zoom="0.25013902"
+     inkscape:cx="87.951091"
+     inkscape:cy="79.955537"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="0"
+     inkscape:window-y="37"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     showguides="true" />
+  <defs
+     id="defs6242">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 26.458333 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="52.916665 : 26.458333 : 1"
+       inkscape:persp3d-origin="26.458333 : 17.638889 : 1"
+       id="perspective10122" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path31937-3"
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.02645833;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:0"
+       d="M 107.14618,4.9959761 A 16.873793,16.873793 0 0 1 90.272384,21.869768 16.873793,16.873793 0 0 1 73.39859,4.9959761 16.873793,16.873793 0 0 1 90.272384,-11.877817 16.873793,16.873793 0 0 1 107.14618,4.9959761 Z" />
+    <ellipse
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3.09562493;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:0;paint-order:normal"
+       id="path37538"
+       cx="-36.870178"
+       cy="-13.404131"
+       rx="11.134874"
+       ry="7.3202963" />
+    <ellipse
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3.09562;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:0;paint-order:normal"
+       id="path37558"
+       cx="-44.181705"
+       cy="-15.385508"
+       rx="11.297413"
+       ry="7.290411" />
+    <ellipse
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3.09562;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:0;paint-order:normal"
+       id="path37560"
+       cx="-33.239952"
+       cy="-16.154898"
+       rx="4.2381687"
+       ry="2.9785903" />
+    <path
+       id="rect2420"
+       style="fill:#020202;stroke-width:5.26576;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:0;stroke-opacity:0.997406;paint-order:markers fill stroke"
+       d="M 27.404528 3.9945881 C 18.386574 3.9945881 10.893392 11.388508 10.893392 20.505725 C 10.893392 20.513825 10.894412 20.523843 10.894425 20.533113 L 10.916129 20.533113 L 10.916129 23.831103 L 9.1710162 23.831103 C 7.7275341 23.831103 6.5654906 25.604861 6.5654906 27.808121 L 6.5654906 44.706314 C 6.5654906 46.909574 7.7275341 48.683332 9.1710162 48.683332 L 45.594115 48.683332 C 47.037599 48.683332 48.199641 46.909574 48.199641 44.706314 L 48.199641 27.808121 C 48.199641 25.604861 47.037599 23.831103 45.594115 23.831103 L 43.887759 23.831103 L 43.887759 20.528979 L 43.913081 20.528979 C 43.913097 20.522279 43.913598 20.513931 43.913598 20.506241 C 43.913598 11.389026 36.422493 3.9951038 27.404528 3.9951049 L 27.404528 3.9945881 z M 27.404528 12.728939 C 31.875401 12.728939 35.31929 16.210301 35.31929 20.505725 C 35.31929 20.512825 35.318796 20.521883 35.318774 20.530013 L 35.322391 20.530013 L 35.322391 23.831103 L 19.488216 23.831103 L 19.488216 20.53208 L 19.4908 20.53208 C 19.490774 20.52428 19.490283 20.514425 19.490283 20.505725 C 19.490283 16.210301 22.933698 12.728939 27.404528 12.728939 z " />
+    <g
+       id="rect4008"
+       style="fill:#000000;stroke:none;fill-opacity:0.99740601" />
   </g>
-  <metadata>
-    <rdf:RDF>
-      <cc:Work>
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-        <cc:license rdf:resource="http://creativecommons.org/licenses/publicdomain/"/>
-        <dc:publisher>
-          <cc:Agent rdf:about="http://openclipart.org/">
-            <dc:title>Openclipart</dc:title>
-          </cc:Agent>
-        </dc:publisher>
-        <dc:title>Padlock Icon</dc:title>
-        <dc:date>2010-06-25T17:53:36</dc:date>
-        <dc:description>a simple padlock icon</dc:description>
-        <dc:source>https://openclipart.org/detail/68533/padlock-icon-by-jaschon</dc:source>
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>jaschon</dc:title>
-          </cc:Agent>
-        </dc:creator>
-        <dc:subject>
-          <rdf:Bag>
-            <rdf:li>black</rdf:li>
-            <rdf:li>black and white</rdf:li>
-            <rdf:li>key</rdf:li>
-            <rdf:li>keyhole</rdf:li>
-            <rdf:li>lock</rdf:li>
-            <rdf:li>padlock</rdf:li>
-            <rdf:li>security</rdf:li>
-            <rdf:li>silhouette</rdf:li>
-            <rdf:li>symbol</rdf:li>
-            <rdf:li>tool</rdf:li>
-          </rdf:Bag>
-        </dc:subject>
-      </cc:Work>
-      <cc:License rdf:about="http://creativecommons.org/licenses/publicdomain/">
-        <cc:permits rdf:resource="http://creativecommons.org/ns#Reproduction"/>
-        <cc:permits rdf:resource="http://creativecommons.org/ns#Distribution"/>
-        <cc:permits rdf:resource="http://creativecommons.org/ns#DerivativeWorks"/>
-      </cc:License>
-    </rdf:RDF>
-  </metadata>
 </svg>
