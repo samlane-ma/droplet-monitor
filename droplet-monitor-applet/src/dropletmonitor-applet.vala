@@ -130,7 +130,7 @@ interface DOClient : GLib.Object {
             var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
             attributes["id"] = "droplet-oauth";
             Secret.password_storev.begin (droplet_schema, attributes, Secret.COLLECTION_DEFAULT,
-                                          "password", new_token, null, (obj, async_res) => {
+                                          "Droplet Monitor Token", new_token, null, (obj, async_res) => {
                 try {
                     Secret.password_store.end (async_res);
                 } catch (Error e) {
