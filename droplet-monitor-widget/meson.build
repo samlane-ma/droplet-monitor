@@ -3,3 +3,4 @@ WIDGET_INSTALL_DIR = join_paths(prefix, libdir, 'budgie-desktop', 'raven-plugins
 
 subdir('src')
 subdir('data')
+subdir('icons')

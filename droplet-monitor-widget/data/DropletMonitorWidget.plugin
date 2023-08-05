@@ -5,4 +5,4 @@ Description=Monitor Digital Ocean Droplets from the Raven Side Panel
 Authors=Samuel Lane
 Copyright=Samuel Lane
 Website=https://github.com/samlane-ma
-Icon=do-server-ok-symbolic
+Icon=droplet-status-ok-symbolic
