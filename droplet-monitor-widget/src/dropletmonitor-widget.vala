@@ -54,6 +54,9 @@ public class DropletMonitorWidgetSettings: Gtk.Grid  {
         attach(button_offline_first, 0, 7, 3, 1);
         Gtk.RadioButton button_online_first = new Gtk.RadioButton.with_label_from_widget (button_name, "Sort Online First");
         attach(button_online_first, 0, 8, 3, 1);
+        attach(new Gtk.Label(""), 0, 9, 3, 1);
+        Gtk.CheckButton checkbutton_show_ssh = new Gtk.CheckButton.with_label("Show SSH login box");
+        this.attach(checkbutton_show_ssh, 0, 10, 3, 1);
 
         var sort_offline_first = settings.get_boolean("sort-offline-first");
         var sort_by_status = settings.get_boolean("sort-by-status");
@@ -70,6 +73,8 @@ public class DropletMonitorWidgetSettings: Gtk.Grid  {
         button_name.toggled.connect (sort_toggled);
         button_offline_first.toggled.connect (sort_toggled);
         button_online_first.toggled.connect (sort_toggled);
+
+        settings.bind("show-ssh", checkbutton_show_ssh, "active", GLib.SettingsBindFlags.DEFAULT);
 
         button_update.clicked.connect(() => {
             set_token(entry_token.get_text().strip());
@@ -183,7 +188,7 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
         });
         header.pack_end(header_reveal_button, false, false, 0);
 
-        dm_grid = new DropletMonitorGrid(droplet_list);
+        dm_grid = new DropletMonitorGrid(droplet_list, settings);
 
         content.add(dm_grid);
         show_all();

@@ -4,6 +4,7 @@ public class DropletMonitorGrid : Gtk.Grid {
 
     private WidgetDropletList droplet_list;
     private Gtk.Widget[] action_widgets = {};
+    private Gtk.Widget[] ssh_widgets = {};
     private Gtk.ScrolledWindow scrolled;
     private Gtk.Entry entry_ssh;
     private Gtk.Label label_ssh;
@@ -11,12 +12,15 @@ public class DropletMonitorGrid : Gtk.Grid {
     private Gtk.Box box_ssh;
     private Gtk.ToggleButton button_lock;
     private Gtk.Separator separator;
+    private bool show_ssh = false;
+    private GLib.Settings settings;
 
     private Gtk.Image LOCK_IMAGE;
     private Gtk.Image UNLOCK_IMAGE;
 
-    public DropletMonitorGrid (WidgetDropletList dl) {
+    public DropletMonitorGrid (WidgetDropletList dl, GLib.Settings settings) {
 
+        this.settings = settings;
         this.droplet_list = dl;
 		this.set_column_homogeneous(true);
 		this.set_column_spacing(5);
@@ -88,10 +92,12 @@ public class DropletMonitorGrid : Gtk.Grid {
         this.attach(new Gtk.Separator(Gtk.Orientation.HORIZONTAL),0,4,3,1);
         this.attach(button_box,0,5,3,1);
 
-
-
-        action_widgets = { button_start, button_stop, button_reboot,
-                           entry_ssh, button_ssh, label_at, label_ssh };
+        show_ssh = settings.get_boolean("show-ssh");
+        ssh_widgets = { label_ssh, label_at, button_ssh, entry_ssh };
+        foreach (Gtk.Widget w in ssh_widgets) {
+            w.set_sensitive(false);
+        }
+        action_widgets = { button_start, button_stop, button_reboot };
         foreach (Gtk.Widget w in action_widgets) {
             w.set_sensitive(false);
         }
@@ -115,12 +121,20 @@ public class DropletMonitorGrid : Gtk.Grid {
         entry_ssh.activate.connect(on_ssh_clicked);
         button_ssh.clicked.connect(on_ssh_clicked);
         droplet_list.update_count.connect(on_count_updated);
+
+        settings.changed["show-ssh"].connect(on_show_ssh_changed);
         
         Idle.add(() => {
-            separator.set_visible(false);
-            box_ssh.set_visible(false);
+            box_ssh.set_visible(show_ssh);
+            separator.set_visible(show_ssh);
             return false;
         });
+    }
+
+    private void on_show_ssh_changed () {
+        show_ssh = settings.get_boolean("show-ssh");
+        box_ssh.set_visible(show_ssh);
+        separator.set_visible(show_ssh);
     }
 
     private void on_refresh_clicked(Gtk.Button button) {
@@ -152,6 +166,10 @@ public class DropletMonitorGrid : Gtk.Grid {
         foreach (Gtk.Widget w in action_widgets) {
             w.set_sensitive(has_selection && button_lock.active);
         }
+        foreach (Gtk.Widget w in ssh_widgets) {
+            // Dont't enable SSH unless an active droplet is selected
+            w.set_sensitive(has_selection && droplet_list.selected_is_running());
+        }
     }
 
     private void on_ssh_clicked(Gtk.Widget widget) {
@@ -168,8 +186,6 @@ public class DropletMonitorGrid : Gtk.Grid {
         }
         foreach (Gtk.Widget w in action_widgets) {
             w.set_sensitive(lockbutton.active && droplet_list.has_selected());
-            box_ssh.set_visible(lockbutton.active);
-            separator.set_visible(lockbutton.active);
         }
     }
 
