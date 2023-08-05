@@ -1,7 +1,7 @@
 [Plugin]
-Module=dropletmonitor.so
+Module=com.github.samlane-ma.droplet-monitor.widget.so
 Name=Droplet Monitor
-Description=Monitor Digital Ocean Droplets
+Description=Monitor Digital Ocean Droplets from the Raven Side Panel
 Authors=Samuel Lane
 Copyright=Samuel Lane
 Website=https://github.com/samlane-ma

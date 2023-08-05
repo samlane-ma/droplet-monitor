@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="com.github.samlane-ma.droplet-monitor-applet">
+    <key type="b" name="sort-by-status">
+      <default>true</default>
+      <summary>Sort offlne first</summary>
+      <description>Sort the droplets by their online status</description>
+    </key>
+      <key type="b" name="sort-offline-first">
+      <default>true</default>
+      <summary>Sort offlne first</summary>
+      <description>Offline droplets will be at the top of the list when sorting by status</description>
+    </key>
+  </schema>
+</schemalist>

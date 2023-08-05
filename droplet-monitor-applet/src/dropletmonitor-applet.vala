@@ -22,11 +22,21 @@
  *
  */
 
-
 using Gtk, Gdk;
-using DropletPopover;
 
 namespace DropletApplet {
+
+private DropletList droplet_list;
+
+[DBus (name = "com.github.samlane_ma.droplet_monitor")]
+interface DOClient : GLib.Object {
+    public abstract async DODroplet[] get_droplets () throws GLib.Error;
+    public abstract async void set_token(string token) throws GLib.Error;
+    public abstract async string send_droplet_signal(int mode, string droplet_id) throws GLib.Error;
+    public signal void droplets_updated ();
+    public signal void no_token ();
+    public signal void token_updated(string newtoken);
+}
 
     public class Plugin : Budgie.Plugin, Peas.ExtensionBase {
 
@@ -35,41 +45,14 @@ namespace DropletApplet {
         }
     }
 
-    public class DropletToken : Object {
-        // this allows Budgie Desktop settings to update the token
-        // of an already running applet
-
-        public static DropletPopover.DropletPopover? app_popover;
-        public static string app_token;
-
-        public void set_popover (DropletPopover.DropletPopover popover) {
-            app_popover = popover;
-        }
-
-        public void update_token(string token) {
-            if (app_popover != null) {
-                app_token = token;
-                app_popover.update_token(app_token);
-            }
-        }
-    }
 
     public class DropletSettings : Gtk.Grid {
 
         GLib.Settings? settings;
 
-        private void on_update_clicked(string new_token, DropletToken droplet_token) {
-            if (new_token != "") {
-                droplet_token.update_token(new_token);
-                set_token(new_token);
-            }
-        }
-
         public DropletSettings(GLib.Settings? settings) {
 
             this.settings = settings;
-
-            DropletToken droplet_token = new DropletToken();
 
             Gtk.Entry entry_token = new Gtk.Entry();
             Gtk.LinkButton link = new Gtk.LinkButton.with_label(
@@ -84,16 +67,62 @@ namespace DropletApplet {
             this.attach(label_token,0,1,1,1);
             this.attach(entry_token,0,2,3,1);
             this.attach(button_update,0,3,1,1);
+            this.attach(new Gtk.Label(""), 0, 4, 3, 1);
+            Gtk.Label label_sort = new Gtk.Label("Sort Order:");
+            label_sort.set_halign(Gtk.Align.START);
+            this.attach(label_sort, 0, 5, 1, 1);
+            
+            Gtk.RadioButton button_name = new Gtk.RadioButton.with_label_from_widget (null, "Sort by Name");
+            attach(button_name, 0, 6, 3, 1);
+            Gtk.RadioButton button_offline_first = new Gtk.RadioButton.with_label_from_widget (button_name, "Sort Offline First");
+            attach(button_offline_first, 0, 7, 3, 1);
+            Gtk.RadioButton button_online_first = new Gtk.RadioButton.with_label_from_widget (button_name, "Sort Online First");
+            attach(button_online_first, 0, 8, 3, 1);
+
+            var sort_offline_first = settings.get_boolean("sort-offline-first");
+            var sort_by_status = settings.get_boolean("sort-by-status");
+            if (sort_by_status) {
+                if (sort_offline_first) {
+                    button_offline_first.set_active(true);
+                } else {
+                    button_online_first.set_active(true);
+                }
+            } else {
+                button_name.set_active(true);
+            }
+
+            button_name.toggled.connect (sort_toggled);
+            button_offline_first.toggled.connect (sort_toggled);
+            button_online_first.toggled.connect (sort_toggled);
 
             button_update.clicked.connect(() => {
-                on_update_clicked(entry_token.get_text().strip(), droplet_token);
+                set_token(entry_token.get_text().strip());
                 entry_token.set_text("");
             });
 
             this.show_all();
         }
 
+        private void sort_toggled (Gtk.ToggleButton button) {
+            if (button.get_active() == false) {
+                return;
+            }
+            if (button.label == "Sort by Name") {
+                settings.set_boolean("sort-by-status", false);
+            } else if (button.label == "Sort Offline First") {
+                settings.set_boolean("sort-by-status", true);
+                settings.set_boolean("sort-offline-first", true);
+            } else {
+                settings.set_boolean("sort-by-status", true);
+                settings.set_boolean("sort-offline-first", false);
+            }
+        }
+
         private void set_token(string new_token) {
+            if (new_token == "") {
+                return;
+            }
+            droplet_list.update_token(new_token);
             // changes the token in the "Secret Service"
             var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
                         Secret.SchemaFlags.NONE,
@@ -101,7 +130,7 @@ namespace DropletApplet {
             var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
             attributes["id"] = "droplet-oauth";
             Secret.password_storev.begin (droplet_schema, attributes, Secret.COLLECTION_DEFAULT,
-                                          "password", new_token, null, (obj, async_res) => {
+                                          "Droplet Monitor Token", new_token, null, (obj, async_res) => {
                 try {
                     Secret.password_store.end (async_res);
                 } catch (Error e) {
@@ -109,20 +138,20 @@ namespace DropletApplet {
                 }
             });
         }
-
     }
+
 
     public class DropletApplet : Budgie.Applet {
 
         private GLib.Settings? panel_settings;
         private GLib.Settings? currpanelsubject_settings;
+        private GLib.Settings settings;
 
         private Gtk.EventBox widget;
         private Gtk.Image icon;
-        private DropletPopover.DropletPopover? popover = null;
+        private DropletPopover? popover = null;
         private unowned Budgie.PopoverManager? manager = null;
         private string token = "";
-        private NetworkMonitor netmon;
         private string? password;
 
         public string uuid { public set; public get; }
@@ -130,17 +159,24 @@ namespace DropletApplet {
         public DropletApplet(string uuid) {
             Object(uuid: uuid);
 
+            this.settings_schema = "com.github.samlane-ma.droplet-monitor-applet";
+            this.settings_prefix = "/com/solus-project/budgie-panel/instance/droplet-monitor-applet";
+            this.settings = this.get_applet_settings(uuid);
+
+            droplet_list = new DropletList(token);
+
             var droplet_schema = new Secret.Schema ("com.github.samlane-ma.droplet-monitor",
                                  Secret.SchemaFlags.NONE,
                                  "id", Secret.SchemaAttributeType.STRING);
             var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
             attributes["id"] = "droplet-oauth";
 
-            icon = new Gtk.Image.from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
+            icon = new Gtk.Image.from_icon_name("droplet-status-error-symbolic", Gtk.IconSize.MENU);
             widget = new Gtk.EventBox();
             widget.add(icon);
-            popover = new DropletPopover.DropletPopover(widget, token);
+            popover = new DropletPopover(widget, droplet_list);
             add(widget);
+            droplet_list.update_count.connect(on_count_updated);
 
             widget.button_press_event.connect((e)=> {
                 if (e.button != 1) {
@@ -156,36 +192,46 @@ namespace DropletApplet {
 
             // set up the DropletToken class because Budgie Desktop Settings
             // needs it to update the token if applet is running
-            DropletToken droplet_token = new DropletToken();
-            droplet_token.set_popover(popover);
             Secret.password_lookupv.begin (droplet_schema, attributes, null, (obj, async_res) => {
                 try {
                     password = Secret.password_lookup.end (async_res);
                     if (password == null) {
                         password = "";
                     }
+                    droplet_list.update_token(password);
                 } catch (Error e) {
                     message("Unable to retrieve token from keyring: %s", e.message);
                     password = "";
                 }
-                droplet_token.update_token(password);
-            });
-
-            // Monitors if the network changes (i.e connects or disconnects)
-            // to update the droplet list quicker
-            netmon = NetworkMonitor.get_default ();
-            Timeout.add_seconds_full(GLib.Priority.DEFAULT, 2, () => {
-                netmon.network_changed.connect (popover.update_network);
-                return false;
-            });
+             });
 
             popover.get_child().show_all();
             show_all();
+
+            var sort_by_status = settings.get_boolean("sort-by-status");
+            var sort_offline_first = settings.get_boolean("sort-offline-first");
+            droplet_list.change_sort(true, sort_by_status, sort_offline_first);
+
+            settings.changed.connect(() => {
+                droplet_list.change_sort(true,
+                    settings.get_boolean("sort-by-status"),
+                    settings.get_boolean("sort-offline-first"));
+            });
 
             Idle.add(() => {
                 // watch_applet will monitor if the applet is removed
                 watch_applet(uuid);
                 return false;});
+        }
+
+        private void on_count_updated(int count, bool all_active) {
+            if (count == 0) {
+                icon.set_from_icon_name("droplet-status-error-symbolic", Gtk.IconSize.MENU);
+            } else if (all_active) {
+                icon.set_from_icon_name("droplet-status-ok-symbolic", Gtk.IconSize.MENU);
+            } else {
+                icon.set_from_icon_name("droplet-status-warn-symbolic", Gtk.IconSize.MENU);
+            }
         }
 
         public override void update_popovers(Budgie.PopoverManager? manager) {
@@ -227,7 +273,7 @@ namespace DropletApplet {
                      currpanelsubject_settings.changed["applets"].connect(() => {
                         applets = currpanelsubject_settings.get_strv("applets");
                         if (!find_applet(find_uuid, applets)) {
-                            popover.quit_scan();
+                            droplet_list.quit_scan();
                         }
                     });
                 }

@@ -1,0 +1,2 @@
+option('build-without-widget', type: 'boolean', value: false, description: 'Do not build applet')
+option('build-without-applet', type: 'boolean', value: false, description: 'Do not build widget')
