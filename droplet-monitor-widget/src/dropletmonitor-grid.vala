@@ -26,13 +26,13 @@ public class DropletMonitorGrid : Gtk.Grid {
 		this.set_column_spacing(5);
 		this.set_row_spacing(5);
 
-        LOCK_IMAGE = new Gtk.Image.from_icon_name("do-action-lock-symbolic", 24);
-        UNLOCK_IMAGE = new Gtk.Image.from_icon_name("do-action-unlock-symbolic", 24);
+        LOCK_IMAGE = new Gtk.Image.from_icon_name("droplet-action-lock-symbolic", 24);
+        UNLOCK_IMAGE = new Gtk.Image.from_icon_name("droplet-action-unlock-symbolic", 24);
         LOCK_IMAGE.set_pixel_size(24);
         UNLOCK_IMAGE.set_pixel_size(24);
 
-        string[] button_images = { "do-action-lock-symbolic", "do-droplet-refresh-symbolic", "do-droplet-copy-symbolic",
-                                   "do-droplet-start-symbolic", "do-droplet-stop-symbolic", "do-droplet-reboot-symbolic" };
+        string[] button_images = { "droplet-action-lock-symbolic", "droplet-action-refresh-symbolic", "droplet-action-copy-symbolic",
+                                   "droplet-action-start-symbolic", "droplet-action-stop-symbolic", "droplet-action-reboot-symbolic" };
         string[] tool_tips = { "Toggle actions", "Refresh Droplet list", "Copy selected IP address",
                                "Start selected droplet", "Stop selected droplet", "Reboot selected droplet"};
         button_lock = new Gtk.ToggleButton();
@@ -65,7 +65,7 @@ public class DropletMonitorGrid : Gtk.Grid {
 
 		box_ssh = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
 		Gtk.Button button_ssh = new Gtk.Button();
-        Gtk.Image ssh_image = new Gtk.Image.from_icon_name("do-ssh-launch-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
+        Gtk.Image ssh_image = new Gtk.Image.from_icon_name("droplet-action-ssh-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
         button_ssh.set_image(ssh_image);
         button_ssh.set_tooltip_text("Open SSH connection");
         button_ssh.set_always_show_image(true);

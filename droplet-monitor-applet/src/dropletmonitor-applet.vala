@@ -171,7 +171,7 @@ interface DOClient : GLib.Object {
             var attributes = new GLib.HashTable<string,string> (str_hash, str_equal);
             attributes["id"] = "droplet-oauth";
 
-            icon = new Gtk.Image.from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
+            icon = new Gtk.Image.from_icon_name("droplet-status-error-symbolic", Gtk.IconSize.MENU);
             widget = new Gtk.EventBox();
             widget.add(icon);
             popover = new DropletPopover(widget, droplet_list);
@@ -226,11 +226,11 @@ interface DOClient : GLib.Object {
 
         private void on_count_updated(int count, bool all_active) {
             if (count == 0) {
-                icon.set_from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
+                icon.set_from_icon_name("droplet-status-error-symbolic", Gtk.IconSize.MENU);
             } else if (all_active) {
-                icon.set_from_icon_name("do-server-ok-symbolic", Gtk.IconSize.MENU);
+                icon.set_from_icon_name("droplet-status-ok-symbolic", Gtk.IconSize.MENU);
             } else {
-                icon.set_from_icon_name("do-server-warn-symbolic", Gtk.IconSize.MENU);
+                icon.set_from_icon_name("droplet-status-warn-symbolic", Gtk.IconSize.MENU);
             }
         }
 

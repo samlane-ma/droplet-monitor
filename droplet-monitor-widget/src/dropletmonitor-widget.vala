@@ -133,7 +133,7 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
     public DropletMonitorWidget(string uuid, GLib.Settings? settings) {
         initialize(uuid, settings);
 
-        icon = new Gtk.Image.from_icon_name("do-server-ok-symbolic", Gtk.IconSize.MENU);
+        icon = new Gtk.Image.from_icon_name("droplet-status-ok-symbolic", Gtk.IconSize.MENU);
         icon.margin = 4;
         icon.margin_start = 12;
         icon.margin_end = 10;
@@ -218,11 +218,11 @@ public class DropletMonitorWidget : Budgie.RavenWidget {
 
     private void on_count_updated(int count, bool all_active) {
         if (count == 0) {
-            icon.set_from_icon_name("do-server-error-symbolic", Gtk.IconSize.MENU);
+            icon.set_from_icon_name("droplet-status-error-symbolic", Gtk.IconSize.MENU);
         } else if (all_active) {
-            icon.set_from_icon_name("do-server-ok-symbolic", Gtk.IconSize.MENU);
+            icon.set_from_icon_name("droplet-status-ok-symbolic", Gtk.IconSize.MENU);
         } else {
-            icon.set_from_icon_name("do-server-warn-symbolic", Gtk.IconSize.MENU);
+            icon.set_from_icon_name("droplet-status-warn-symbolic", Gtk.IconSize.MENU);
         }
     }
 
