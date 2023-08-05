@@ -5,18 +5,28 @@ public class DOServer : Object {
     const int ON = 1;
     const int REBOOT = 2;
 
+    // If the Dbus server has not heard anything in TIMEOUT_SECONDS, exit.
+    const int TIMEOUT_SECONDS = 600;
+
     private string last = "";
     private string token = "";
     DODroplet[] all_droplets = {};
     private bool empty_once = false;
     private Soup.Session session;
+    private uint64 last_time = 0;
 
     public DOServer() {
 
         session = new Soup.Session();
         session.timeout = 6;
+        last_time = GLib.get_real_time();
 
         Timeout.add_seconds_full(GLib.Priority.DEFAULT, 15, () => {
+            int difference =  (int) (GLib.get_real_time() - last_time) / 1000000;
+            // We will quit the service if we have not heard from the applet or widget for 1 min
+            if (difference > TIMEOUT_SECONDS ) {
+                mainloop.quit();
+            }
             string current = "no data";
             if (token == "") {
                 return true;
@@ -67,12 +77,14 @@ public class DOServer : Object {
 
     [DBus (name = "GetDroplets")]
     public async DODroplet[] get_droplets () throws DBusError, IOError {
+        last_time = GLib.get_real_time();
         return all_droplets;
     }
 
 
     [DBus (name = "SendDropletSignal")]
     public async string send_droplet_signal(int mode, string droplet_id) throws DBusError, IOError {
+        last_time = GLib.get_real_time();
         if (token == "") {
             return "no token";
         }
@@ -102,6 +114,7 @@ public class DOServer : Object {
 
     [DBus (name = "SetToken")]
     public async void set_token (string token) throws DBusError, IOError {
+        last_time = GLib.get_real_time();
         this.token = token;
         token_updated(token);
         update();
@@ -249,9 +262,10 @@ DODroplet[] get_droplet_data (string result) {
     return droplet_list;
 }
 
+MainLoop mainloop;
 
 void main () {
-    MainLoop mainloop = new MainLoop();
+    mainloop = new MainLoop();
     Bus.own_name (BusType.SESSION, "com.github.samlane_ma.droplet_monitor", BusNameOwnerFlags.NONE,
                   on_bus_aquired,
                   () => {},
