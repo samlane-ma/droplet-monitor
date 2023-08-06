@@ -1,58 +1,94 @@
+/*
+ * This file is part of the Budgie Droplet Monitor applet
+ *
+ * Copyright Samuel Lane
+ * Website=https://github.com/samlane-ma/droplet-monitor
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version
+ * 3 of the License, or (at your option) any later version.
+ */
+
 namespace DropletApplet {
 
     public class DropletPopover : Budgie.Popover {
 
         private DropletList droplet_list;
         private Gtk.Widget[] action_widgets = {};
+        private Gtk.Widget[] ssh_widgets = {};
+        private Gtk.ScrolledWindow scrolled;
         private Gtk.Entry entry_ssh;
         private Gtk.Label label_ssh;
+        private Gtk.Box box_ssh;
         private Gtk.ToggleButton button_lock;
+        private Gtk.Button button_copy;
+        private Gtk.Separator separator;
+        bool show_ssh = false;
+        private GLib.Settings settings;
 
-        private Gtk.Image LOCK_IMAGE = new Gtk.Image.from_icon_name(
-            "droplet-action-lock-symbolic",Gtk.IconSize.MENU);
-        private Gtk.Image UNLOCK_IMAGE = new Gtk.Image.from_icon_name(
-            "droplet-action-unlock-symbolic",Gtk.IconSize.MENU);
+        private Gtk.Image LOCK_IMAGE;
+        private Gtk.Image UNLOCK_IMAGE;
+        const int PIXELSIZE = 32;
 
-
-        public DropletPopover(Gtk.EventBox relative_parent, DropletList dl) {
+        public DropletPopover(Gtk.EventBox relative_parent, DropletList dl, GLib.Settings settings) {
             Object(relative_to: relative_parent);
 
+            this.settings = settings;
             droplet_list = dl;
             Gtk.Grid grid = new Gtk.Grid();
             grid.set_column_homogeneous(true);
             grid.set_column_spacing(10);
 
+            LOCK_IMAGE = new Gtk.Image.from_icon_name("droplet-action-lock-symbolic", PIXELSIZE);
+            UNLOCK_IMAGE = new Gtk.Image.from_icon_name("droplet-action-unlock-symbolic", PIXELSIZE);
+            LOCK_IMAGE.set_pixel_size(PIXELSIZE);
+            UNLOCK_IMAGE.set_pixel_size(PIXELSIZE);
+
+            string[] button_images = { "droplet-action-lock-symbolic", "droplet-action-refresh-symbolic", "droplet-action-copy-symbolic",
+                                       "droplet-action-start-symbolic", "droplet-action-stop-symbolic", "droplet-action-reboot-symbolic" };
+            string[] tool_tips = { "Toggle actions", "Refresh Droplet list", "Copy selected IP address",
+                                   "Start selected droplet", "Stop selected droplet", "Reboot selected droplet"};
+
             Gtk.Button button_refresh = new Gtk.Button();
             Gtk.Button button_start = new Gtk.Button();
             Gtk.Button button_stop = new Gtk.Button();
-            Gtk.Button button_copy = new Gtk.Button();
+            button_copy = new Gtk.Button();
             Gtk.Button button_reboot = new Gtk.Button();
             Gtk.Label label_status = new Gtk.Label(" ");
             Gtk.Label label_spacer = new Gtk.Label("");
             label_spacer.set_width_chars(50);
             button_lock = new Gtk.ToggleButton();
 
-            string[,] button_labels = { { "Actions", "Refresh", "Copy IP" },
-                                        { "Start", "Stop", "Reboot"  } };
-            Gtk.Button[,] buttons = { { button_lock, button_refresh, button_copy },
-                                      { button_start, button_stop, button_reboot } };
+            Gtk.Button[] buttons = { button_lock, button_refresh, button_copy,
+                                      button_start, button_stop, button_reboot };
 
-            grid.attach(label_spacer,0,0,3,1);
-            grid.attach(new Gtk.Separator(Gtk.Orientation.HORIZONTAL),0,1,3,1);
-            grid.attach(droplet_list,0,2,3,1);
-            grid.attach(label_status,0,3,3,1);
-            grid.attach(new Gtk.Separator(Gtk.Orientation.HORIZONTAL),0,4,3,1);
-
-            for (var row = 0; row < 2; row++) {
-                for (var col = 0; col < 3; col++) {
-                    buttons[row, col].set_label(button_labels[row,col]);
-                    grid.attach(buttons[row, col], col, row + 5, 1, 1);
-                }
+            Gtk.Box button_box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+            button_box.set_halign(Gtk.Align.FILL);
+            for(int i = 0; i < 6; i++) {
+                Gtk.Image img = new Gtk.Image.from_icon_name(button_images[i], PIXELSIZE);
+                img.set_pixel_size(PIXELSIZE);
+                buttons[i].set_image(img);
+                buttons[i].set_always_show_image(true);
+                buttons[i].set_relief(Gtk.ReliefStyle.NONE);
+                buttons[i].set_hexpand(true);
+                buttons[i].set_halign(Gtk.Align.FILL);
+                buttons[i].set_tooltip_text(tool_tips[i]);
+                button_box.pack_start(buttons[i], false, false, 5);
             }
 
-            Gtk.Box box_ssh = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 5);
+            scrolled = new Gtk.ScrolledWindow(null, null);
+            scrolled.add(droplet_list);
+            scrolled.set_size_request(-1, 80);
+
+            box_ssh = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 5);
             Gtk.Button button_ssh = new Gtk.Button();
-            button_ssh.set_label("Open SSH");
+            Gtk.Image ssh_image = new Gtk.Image.from_icon_name("droplet-action-ssh-symbolic", PIXELSIZE);
+            ssh_image.set_pixel_size(PIXELSIZE);
+            button_ssh.set_image(ssh_image);
+            button_ssh.set_tooltip_text("Open SSH connection");
+            button_ssh.set_always_show_image(true);
+            button_ssh.set_relief(Gtk.ReliefStyle.NONE);
             entry_ssh = new Gtk.Entry();
             entry_ssh.set_text("root");
             entry_ssh.set_width_chars(15);
@@ -61,16 +97,29 @@ namespace DropletApplet {
             label_ssh = new Gtk.Label("");
             label_ssh.set_xalign(0);
             label_ssh.set_width_chars(15);
-            box_ssh.pack_start(entry_ssh, false, false, 2);
-            box_ssh.pack_start(label_at, false, false, 2);
-            box_ssh.pack_start(label_ssh, false, false, 2);
-            box_ssh.pack_end(button_ssh, false, false, 2);
-            grid.attach(new Gtk.Label(""),0,7,3,1);
-            grid.attach(box_ssh,0,8,3,1);
+            box_ssh.pack_start(entry_ssh, true, true, 0);
+            box_ssh.pack_start(label_at, false, false, 5);
+            box_ssh.pack_start(label_ssh, false, false, 5);
+            box_ssh.pack_start(button_ssh, true, true, 5);
+            separator = new Gtk.Separator(Gtk.Orientation.HORIZONTAL);
+            grid.attach(label_spacer,0,0,3,1);
+            grid.attach(new Gtk.Separator(Gtk.Orientation.HORIZONTAL), 0, 1, 3, 1);
+            grid.attach(scrolled,0,2,3,1);
+            grid.attach(label_status,0,3,3,1);
+            grid.attach(separator,0,4,3,1);
+            grid.attach(box_ssh,0,5,3,1);
+            Gtk.Separator button_separator = new Gtk.Separator(Gtk.Orientation.HORIZONTAL);
+            button_separator.margin_bottom = 7;
+            grid.attach(button_separator, 0, 6, 3, 1);
+            grid.attach(button_box,0,7,3,1);
             this.add((grid));
 
-            action_widgets = { button_start, button_stop, button_reboot,
-                               entry_ssh, button_ssh, label_at, label_ssh };
+            show_ssh = settings.get_boolean("show-ssh");
+            ssh_widgets = { label_ssh, label_at, button_ssh, entry_ssh };
+            foreach (Gtk.Widget w in ssh_widgets) {
+                w.set_sensitive(false);
+            }
+            action_widgets = { button_start, button_stop, button_reboot };
             foreach (Gtk.Widget w in action_widgets) {
                 w.set_sensitive(false);
             }
@@ -93,8 +142,24 @@ namespace DropletApplet {
             button_lock.toggled.connect(on_action_lock_toggled);
             entry_ssh.activate.connect(button_ssh.clicked);
             button_ssh.clicked.connect(on_ssh_clicked);
+            droplet_list.update_count.connect(on_count_updated);
+
+            button_copy.set_sensitive(false);
+            settings.changed["show-ssh"].connect(on_show_ssh_changed);
+
+            Idle.add(() => {
+                box_ssh.set_visible(show_ssh);
+                separator.set_visible(show_ssh);
+                return false;
+            });
 
             this.get_child().show_all();
+        }
+
+        private void on_show_ssh_changed () {
+            show_ssh = settings.get_boolean("show-ssh");
+            box_ssh.set_visible(show_ssh);
+            separator.set_visible(show_ssh);
         }
 
         private void on_refresh_clicked(Gtk.Button button) {
@@ -123,8 +188,13 @@ namespace DropletApplet {
                 current_selection = droplet_list.get_selected_ip();
             }
             label_ssh.set_label(current_selection);
+            button_copy.set_sensitive(has_selection);
             foreach (Gtk.Widget w in action_widgets) {
                 w.set_sensitive(has_selection && button_lock.active);
+            }
+            foreach (Gtk.Widget w in ssh_widgets) {
+                // Dont't enable SSH unless an active droplet is selected
+                w.set_sensitive(has_selection && droplet_list.selected_is_running());
             }
         }
 
@@ -143,6 +213,13 @@ namespace DropletApplet {
             foreach (Gtk.Widget w in action_widgets) {
                 w.set_sensitive(lockbutton.active);
             }
+        }
+
+        private void on_count_updated(int count) {
+            int size = 25 * count;
+            if (size > 250) size = 250;
+            if (size < 75) size = 75;
+            scrolled.set_size_request(-1, size);
         }
 
         private void send_action (int action, Gtk.Label status, Gtk.Button button) {

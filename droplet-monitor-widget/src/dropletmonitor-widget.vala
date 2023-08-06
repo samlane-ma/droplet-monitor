@@ -1,3 +1,26 @@
+/*
+ *  Droplet Monitor Widget for the Budgie Desktop
+ *
+ *  Copyright © 2022-2023 Samuel Lane
+ *  http://github.com/samlane-ma/
+ *
+ *  This applet is no way associated with Digital Ocean™.
+ *  Digtal Ocean and Droplets are Copyright of DigitalOcean, LLC
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
 
 namespace DropletMonitorWidget {
 
@@ -30,6 +53,7 @@ public class DropletMonitorWidgetSettings: Gtk.Grid  {
     public DropletMonitorWidgetSettings(GLib.Settings? settings) {
 
         this.settings = settings;
+
         Gtk.Entry entry_token = new Gtk.Entry();
         Gtk.LinkButton link = new Gtk.LinkButton.with_label(
             "https://docs.digitalocean.com/reference/api/create-personal-access-token/",
@@ -47,7 +71,7 @@ public class DropletMonitorWidgetSettings: Gtk.Grid  {
         Gtk.Label label_sort = new Gtk.Label("Sort Order:");
         label_sort.set_halign(Gtk.Align.START);
         this.attach(label_sort, 0, 5, 1, 1);
-        
+
         Gtk.RadioButton button_name = new Gtk.RadioButton.with_label_from_widget (null, "Sort by Name");
         attach(button_name, 0, 6, 3, 1);
         Gtk.RadioButton button_offline_first = new Gtk.RadioButton.with_label_from_widget (button_name, "Sort Offline First");

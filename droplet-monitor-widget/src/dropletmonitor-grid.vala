@@ -1,3 +1,15 @@
+/*
+ * This file is part of the Budgie Droplet Monitor applet
+ *
+ * Copyright Samuel Lane
+ * Website=https://github.com/samlane-ma/droplet-monitor
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version
+ * 3 of the License, or (at your option) any later version.
+ */
+
 namespace DropletMonitorWidget {
 
 public class DropletMonitorGrid : Gtk.Grid {
@@ -11,6 +23,7 @@ public class DropletMonitorGrid : Gtk.Grid {
     private Gtk.Label label_status;
     private Gtk.Box box_ssh;
     private Gtk.ToggleButton button_lock;
+    private Gtk.Button button_copy;
     private Gtk.Separator separator;
     private bool show_ssh = false;
     private GLib.Settings settings;
@@ -39,11 +52,11 @@ public class DropletMonitorGrid : Gtk.Grid {
         Gtk.Button button_refresh = new Gtk.Button();
 		Gtk.Button button_start = new Gtk.Button();
 		Gtk.Button button_stop = new Gtk.Button();
-		Gtk.Button button_copy = new Gtk.Button();
+		button_copy = new Gtk.Button();
 		Gtk.Button button_reboot = new Gtk.Button();
         Gtk.Button[] buttons = { button_lock, button_refresh, button_copy,
                                  button_start, button_stop, button_reboot };
-        
+
         Gtk.Box button_box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
         button_box.set_halign(Gtk.Align.FILL);
         for(int i = 0; i < 6; i++) {
@@ -57,7 +70,7 @@ public class DropletMonitorGrid : Gtk.Grid {
             buttons[i].set_tooltip_text(tool_tips[i]);
             button_box.pack_start(buttons[i], false, false, 5);
         }
-        
+
         label_status = new Gtk.Label(" ");
 		scrolled = new Gtk.ScrolledWindow(null, null);
 		scrolled.add(droplet_list);
@@ -104,6 +117,7 @@ public class DropletMonitorGrid : Gtk.Grid {
 
         button_lock.set_image(LOCK_IMAGE);
         button_lock.set_always_show_image(true);
+
         button_stop.clicked.connect(() => {
             send_action(OFF, label_status, button_stop, button_lock);
         });
@@ -113,7 +127,6 @@ public class DropletMonitorGrid : Gtk.Grid {
         button_reboot.clicked.connect(() => {
             send_action(REBOOT, label_status, button_reboot, button_lock);
         });
-
         button_refresh.clicked.connect(on_refresh_clicked);
         button_copy.clicked.connect (on_copy_clicked);
         droplet_list.row_selected.connect(on_row_selected);
@@ -122,8 +135,9 @@ public class DropletMonitorGrid : Gtk.Grid {
         button_ssh.clicked.connect(on_ssh_clicked);
         droplet_list.update_count.connect(on_count_updated);
 
+        button_copy.set_sensitive(false);
         settings.changed["show-ssh"].connect(on_show_ssh_changed);
-        
+
         Idle.add(() => {
             box_ssh.set_visible(show_ssh);
             separator.set_visible(show_ssh);
@@ -163,6 +177,7 @@ public class DropletMonitorGrid : Gtk.Grid {
             current_selection = droplet_list.get_selected_ip();
         }
         label_ssh.set_label(current_selection);
+        button_copy.set_sensitive(has_selection);
         foreach (Gtk.Widget w in action_widgets) {
             w.set_sensitive(has_selection && button_lock.active);
         }

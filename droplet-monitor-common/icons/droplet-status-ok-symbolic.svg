@@ -7,12 +7,15 @@
    viewBox="0 0 52.916665 52.916666"
    version="1.1"
    id="svg269"
-   inkscape:version="1.2.2 (732a01da63, 2022-12-09, custom)"
-   sodipodi:docname="do-server-ok-symbolic.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="droplet-status-ok-symbolic.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <sodipodi:namedview
      id="namedview271"
      pagecolor="#ffffff"
@@ -25,14 +28,15 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="2.1165587"
-     inkscape:cx="78.192965"
-     inkscape:cy="124.967"
-     inkscape:window-width="1400"
-     inkscape:window-height="750"
-     inkscape:window-x="50"
-     inkscape:window-y="123"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="layer1" />
+     inkscape:cx="-67.326269"
+     inkscape:cy="124.73077"
+     inkscape:window-width="1920"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="37"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     inkscape:pageshadow="0" />
   <defs
      id="defs266" />
   <g
@@ -52,4 +56,34 @@
        style="stroke-width:5.14459;stroke-linecap:round;stroke-miterlimit:6.7;paint-order:markers fill stroke"
        d="m 4.3610066,36.120931 c -1.1676289,0 -2.1076386,0.913653 -2.1076386,2.048539 v 11.441866 c 0,1.134887 0.9400097,2.04854 2.1076386,2.04854 H 48.781945 c 1.167628,0 2.107637,-0.913653 2.107637,-2.04854 V 38.16947 c 0,-1.134886 -0.94001,-2.048539 -2.107637,-2.048539 z m 32.3055474,4.61893 a 3.0109112,2.9264838 0 0 1 3.010912,2.926483 3.0109112,2.9264838 0 0 1 -3.010912,2.926485 3.0109112,2.9264838 0 0 1 -3.010911,-2.926485 3.0109112,2.9264838 0 0 1 3.010911,-2.926483 z m 8.316467,0 a 3.0109112,2.9264838 0 0 1 3.010912,2.926483 3.0109112,2.9264838 0 0 1 -3.010912,2.926485 3.0109112,2.9264838 0 0 1 -3.010911,-2.926485 3.0109112,2.9264838 0 0 1 3.010911,-2.926483 z M 7.3407493,41.57208 H 27.282157 c 0.87997,0 1.588372,0.637334 1.588372,1.428947 v 1.056849 c 0,0.791612 -0.708402,1.428948 -1.588372,1.428948 H 7.3407493 c -0.879971,0 -1.5883728,-0.637336 -1.5883728,-1.428948 v -1.056849 c 0,-0.791613 0.7084018,-1.428947 1.5883728,-1.428947 z" />
   </g>
+  <metadata
+     id="metadata997">
+    <rdf:RDF>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by-sa/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#ShareAlike" />
+      </cc:License>
+      <cc:Work
+         rdf:about="">
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by-sa/4.0/" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Samuel Lane</dc:title>
+          </cc:Agent>
+        </dc:creator>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
 </svg>

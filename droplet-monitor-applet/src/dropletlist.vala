@@ -1,3 +1,15 @@
+/*
+ * This file is part of the Budgie Droplet Monitor applet
+ *
+ * Copyright Samuel Lane
+ * Website=https://github.com/samlane-ma/droplet-monitor
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version
+ * 3 of the License, or (at your option) any later version.
+ */
+
 using Gtk;
 using GLib;
 
@@ -230,6 +242,7 @@ public class DropletList: Gtk.ListBox {
         foreach (var droplet in droplet_list) {
             // forms the ListBox
             var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 20);
+            hbox.set_size_request(-1, 20);
             var name_label = new Gtk.Label(droplet.name);
             var ip_label = new Gtk.Label(droplet.public_ipv4);
             string ip_tooltip = @"Private: $(droplet.private_ipv4)\nPublic: $(droplet.public_ipv4)\nFloating:" +
@@ -252,7 +265,7 @@ public class DropletList: Gtk.ListBox {
             }
             hbox.pack_start(status_image, false, false, 5);
             hbox.pack_start(name_label, false, false, 5);
-            hbox.pack_end(ip_label, false, false, 5);
+            hbox.pack_end(ip_label, false, false, 10);
             this.insert(hbox, -1);
             if (selected_droplet == droplet.id) {
                 this.select_row(this.get_row_at_index(found_count));

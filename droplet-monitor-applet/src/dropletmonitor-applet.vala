@@ -1,7 +1,7 @@
 /*
  *  Droplet Monitor for the Budgie Panel
  *
- *  Copyright © 2022 Samuel Lane
+ *  Copyright © 2022-2023 Samuel Lane
  *  http://github.com/samlane-ma/
  *
  *  This applet is no way associated with Digital Ocean™.
@@ -71,13 +71,16 @@ interface DOClient : GLib.Object {
             Gtk.Label label_sort = new Gtk.Label("Sort Order:");
             label_sort.set_halign(Gtk.Align.START);
             this.attach(label_sort, 0, 5, 1, 1);
-            
+
             Gtk.RadioButton button_name = new Gtk.RadioButton.with_label_from_widget (null, "Sort by Name");
             attach(button_name, 0, 6, 3, 1);
             Gtk.RadioButton button_offline_first = new Gtk.RadioButton.with_label_from_widget (button_name, "Sort Offline First");
             attach(button_offline_first, 0, 7, 3, 1);
             Gtk.RadioButton button_online_first = new Gtk.RadioButton.with_label_from_widget (button_name, "Sort Online First");
             attach(button_online_first, 0, 8, 3, 1);
+            attach(new Gtk.Label(""), 0, 9, 3, 1);
+            Gtk.CheckButton checkbutton_show_ssh = new Gtk.CheckButton.with_label("Show SSH login box");
+            this.attach(checkbutton_show_ssh, 0, 10, 3, 1);
 
             var sort_offline_first = settings.get_boolean("sort-offline-first");
             var sort_by_status = settings.get_boolean("sort-by-status");
@@ -94,6 +97,8 @@ interface DOClient : GLib.Object {
             button_name.toggled.connect (sort_toggled);
             button_offline_first.toggled.connect (sort_toggled);
             button_online_first.toggled.connect (sort_toggled);
+
+            settings.bind("show-ssh", checkbutton_show_ssh, "active", GLib.SettingsBindFlags.DEFAULT);
 
             button_update.clicked.connect(() => {
                 set_token(entry_token.get_text().strip());
@@ -174,7 +179,7 @@ interface DOClient : GLib.Object {
             icon = new Gtk.Image.from_icon_name("droplet-status-error-symbolic", Gtk.IconSize.MENU);
             widget = new Gtk.EventBox();
             widget.add(icon);
-            popover = new DropletPopover(widget, droplet_list);
+            popover = new DropletPopover(widget, droplet_list, settings);
             add(widget);
             droplet_list.update_count.connect(on_count_updated);
 

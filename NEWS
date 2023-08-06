@@ -4,11 +4,13 @@ Released: xxxx
 
 Notes:
  * A dbus service is now used to handle the calls to the Digital Ocean API, rather than doing this directly from the Budgie panel.
- * Brand new Raven widget that allows the same functionality as the panel applet. The applet uses icons to be more "raven panel friendly"
+ * Brand new Raven widget that allows the same functionality as the panel applet.
+ * Applet now uses icons with tooltips to make the popover look more visually appealing.
+ * Updated icons - they are now completly custom created. Previous icons have been replaced. The applet no longer uses any system or 3rd party icons.
  * Added the ability to sort the droplet list. Droplets can be sorted by name, by online first, and by offline first.
- * Sort method for applet and wirget can be set separately.
- * New icons - all icons have been custom designed for this applet and no longer use system or 3rd party icons.
- * Project restructured for better organization. It also possible to install just the applet or just the widget.
+ * Sort method for applet and widget can be set separately.
+ * Both applet and widget have an option to toggle the visibility of the SSH box.
+ * Project restructured for better organization. It also possible to build and install just the applet or just the widget.
 
 Version 1.1
 ~~~~~~~~~~~

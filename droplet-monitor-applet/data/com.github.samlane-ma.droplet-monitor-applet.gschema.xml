@@ -11,5 +11,10 @@
       <summary>Sort offlne first</summary>
       <description>Offline droplets will be at the top of the list when sorting by status</description>
     </key>
+    <key type="b" name="show-ssh">
+      <default>true</default>
+      <summary>Show SSH login box</summary>
+      <description>Show the option to login to the selected droplet via</description>
+    </key>
   </schema>
 </schemalist>
