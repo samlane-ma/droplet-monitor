@@ -2,7 +2,7 @@
 <schemalist>
   <schema id="com.github.samlane-ma.droplet-monitor.widget">
     <key type="b" name="sort-by-status">
-      <default>true</default>
+      <default>false</default>
       <summary>Sort offlne first</summary>
       <description>Sort the droplets by their online status</description>
     </key>
