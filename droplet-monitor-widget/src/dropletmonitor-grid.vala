@@ -21,12 +21,19 @@ public class DropletMonitorGrid : Gtk.Grid {
     private Gtk.Entry entry_ssh;
     private Gtk.Label label_ssh;
     private Gtk.Label label_status;
+    private Gtk.Label label_at;
+    private Gtk.Button button_ssh;
     private Gtk.Box box_ssh;
     private Gtk.ToggleButton button_lock;
     private Gtk.Button button_copy;
     private Gtk.Separator separator;
     private bool show_ssh = false;
     private GLib.Settings settings;
+    /* Depth keeps track of how many times a button that changes the status label
+     * has been clicked, that way the label is cleared only after the latest
+     * callback has been completed.
+     */
+    private int depth = 0;
 
     private Gtk.Image LOCK_IMAGE;
     private Gtk.Image UNLOCK_IMAGE;
@@ -35,9 +42,9 @@ public class DropletMonitorGrid : Gtk.Grid {
 
         this.settings = settings;
         this.droplet_list = dl;
-		this.set_column_homogeneous(true);
-		this.set_column_spacing(5);
-		this.set_row_spacing(5);
+        this.set_column_homogeneous(true);
+        this.set_column_spacing(5);
+        this.set_row_spacing(5);
 
         LOCK_IMAGE = new Gtk.Image.from_icon_name("droplet-action-lock-symbolic", 24);
         UNLOCK_IMAGE = new Gtk.Image.from_icon_name("droplet-action-unlock-symbolic", 24);
@@ -72,30 +79,12 @@ public class DropletMonitorGrid : Gtk.Grid {
         }
 
         label_status = new Gtk.Label(" ");
-		scrolled = new Gtk.ScrolledWindow(null, null);
-		scrolled.add(droplet_list);
-		scrolled.set_size_request(-1, 80);
+        scrolled = new Gtk.ScrolledWindow(null, null);
+        scrolled.add(droplet_list);
+        scrolled.set_size_request(-1, 80);
 
-		box_ssh = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
-		Gtk.Button button_ssh = new Gtk.Button();
-        Gtk.Image ssh_image = new Gtk.Image.from_icon_name("droplet-action-ssh-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
-        button_ssh.set_image(ssh_image);
-        button_ssh.set_tooltip_text("Open SSH connection");
-        button_ssh.set_always_show_image(true);
-        button_ssh.set_relief(Gtk.ReliefStyle.NONE);
-		entry_ssh = new Gtk.Entry();
-		entry_ssh.set_text("root");
-        entry_ssh.set_alignment(1);
-		entry_ssh.set_width_chars(8);
-        entry_ssh.set_hexpand(true);
-		Gtk.Label label_at = new Gtk.Label("@");
-        label_ssh = new Gtk.Label("");
-		label_ssh.set_xalign(0);
-		label_ssh.set_width_chars(15);
-		box_ssh.pack_start(entry_ssh, true, true, 3);
-		box_ssh.pack_start(label_at, false, false, 3);
-		box_ssh.pack_start(label_ssh, false, false, 3);
-		box_ssh.pack_start(button_ssh, false, false, 3);
+        box_ssh = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 0);
+        build_ssh_box(box_ssh);
 
         separator = new Gtk.Separator(Gtk.Orientation.HORIZONTAL);
         this.attach(scrolled,0,0,3,1);
@@ -119,13 +108,13 @@ public class DropletMonitorGrid : Gtk.Grid {
         button_lock.set_always_show_image(true);
 
         button_stop.clicked.connect(() => {
-            send_action(OFF, label_status, button_stop, button_lock);
+            send_action(OFF, button_stop);
         });
         button_start.clicked.connect(() => {
-            send_action(ON, label_status, button_start, button_lock);
+            send_action(ON, button_start);
         });
         button_reboot.clicked.connect(() => {
-            send_action(REBOOT, label_status, button_reboot, button_lock);
+            send_action(REBOOT, button_reboot);
         });
         button_refresh.clicked.connect(on_refresh_clicked);
         button_copy.clicked.connect (on_copy_clicked);
@@ -143,6 +132,28 @@ public class DropletMonitorGrid : Gtk.Grid {
             separator.set_visible(show_ssh);
             return false;
         });
+    }
+
+    private void build_ssh_box(Gtk.Box box) {
+        button_ssh = new Gtk.Button();
+        Gtk.Image ssh_image = new Gtk.Image.from_icon_name("droplet-action-ssh-symbolic", Gtk.IconSize.LARGE_TOOLBAR);
+        button_ssh.set_image(ssh_image);
+        button_ssh.set_tooltip_text("Open SSH connection");
+        button_ssh.set_always_show_image(true);
+        button_ssh.set_relief(Gtk.ReliefStyle.NONE);
+        entry_ssh = new Gtk.Entry();
+        entry_ssh.set_text("root");
+        entry_ssh.set_alignment(1);
+        entry_ssh.set_width_chars(8);
+        entry_ssh.set_hexpand(true);
+        label_at = new Gtk.Label("@");
+        label_ssh = new Gtk.Label("");
+        label_ssh.set_xalign(0);
+        label_ssh.set_width_chars(15);
+        box.pack_start(entry_ssh, true, true, 3);
+        box.pack_start(label_at, false, false, 3);
+        box.pack_start(label_ssh, false, false, 3);
+        box.pack_start(button_ssh, false, false, 3);
     }
 
     private void on_show_ssh_changed () {
@@ -166,7 +177,16 @@ public class DropletMonitorGrid : Gtk.Grid {
             Gtk.Clipboard clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
             string copy_ip = droplet_list.get_selected_ip();
             clipboard.set_text(copy_ip, copy_ip.length);
+            depth += 1;
+            label_status.set_text("%s copied!".printf(copy_ip));
+            Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, restore_status_label);
         }
+    }
+
+    private bool restore_status_label() {
+        depth -= 1;
+        if (depth == 0) label_status.set_text("");
+        return false;
     }
 
     private void on_row_selected(Gtk.ListBox box, Gtk.ListBoxRow? row) {
@@ -205,13 +225,15 @@ public class DropletMonitorGrid : Gtk.Grid {
     }
 
     private void on_count_updated(int count) {
+        // This keeps the scrolled window from getting too small or too big
+        // more reliably than set_min/max_content_height does
         int size = 26 * count;
         if (size > 104) size = 108;
         if (size < 50) size = 50;
         scrolled.set_size_request(-1, size);
     }
 
-    private void send_action (int action, Gtk.Label status, Gtk.Button button, Gtk.ToggleButton lock) {
+    private void send_action (int action, Gtk.Button button) {
         if (!droplet_list.has_selected()) return;
         string[] action_name = {"Shutdown", "Startup", "Reboot"};
         if (action == ON && droplet_list.selected_is_running()) {
@@ -220,12 +242,13 @@ public class DropletMonitorGrid : Gtk.Grid {
         if (action == OFF && !droplet_list.selected_is_running()) {
             return;
         }
+        depth += 1;
         button.set_sensitive(false);
-        status.set_text(@"$(action_name[action]) sent. Please wait...");
+        label_status.set_text(@"$(action_name[action]) sent. Please wait...");
         droplet_list.do_action(action);
         Timeout.add_seconds_full(GLib.Priority.DEFAULT, 5, () => {
-            status.set_text("");
-            button.set_sensitive(lock.get_active());
+            restore_status_label();
+            button.set_sensitive(button_lock.get_active() && droplet_list.has_selected());
             return false;
         });
     }
