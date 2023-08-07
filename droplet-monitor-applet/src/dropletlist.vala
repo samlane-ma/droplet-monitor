@@ -16,7 +16,7 @@ using GLib;
 namespace DropletApplet {
 
 public class DropletList: Gtk.ListBox {
-    private DOClient client = null;
+    private DOClient? client = null;
     private DODroplet[] droplets = {};
     private string token;
     private bool stay_running = true;
@@ -86,7 +86,7 @@ public class DropletList: Gtk.ListBox {
         if (row != null) {
             var box = (Gtk.Box) row.get_child();
             var widgets = box.get_children();
-            var label2 = (Gtk.Label) widgets.nth_data(2);
+            var label2 = (Gtk.Label) widgets.nth_data(1);
             var ip_address = label2.get_label();
             string id = "";
             foreach (var droplet in droplets) {
@@ -114,7 +114,7 @@ public class DropletList: Gtk.ListBox {
     }
 
     public void quit_scan() {
-        // stop thread when applet is removed
+        // stop thread when removed from Budgie Panel
         stay_running = false;
     }
 
@@ -134,7 +134,7 @@ public class DropletList: Gtk.ListBox {
             var box = (Gtk.Box) row[i].get_child();
             var widgets = box.get_children();
             var icon = (Gtk.Image) widgets.nth_data(0);
-            var label = (Gtk.Label) widgets.nth_data(1);
+            var label = (Gtk.Label) widgets.nth_data(2);
             string icon_name;
             IconSize icon_size;
             icon.get_icon_name(out icon_name, out icon_size);
@@ -155,13 +155,13 @@ public class DropletList: Gtk.ListBox {
      * listbox to find the right row. We do this by finding the row with the IP
      * address that matches the IP address of the last entry selected.
      */
-     private int get_selected_index(string ip) {
+    private int get_selected_index(string ip) {
         int i = 0;
         foreach (Gtk.Widget child in this.get_children()) {
             ListBoxRow row = (ListBoxRow) child;
             var box = (Gtk.Box) row.get_child();
             var widgets = box.get_children();
-            var ip_addr = (Gtk.Label) widgets.nth_data(2);
+            var ip_addr = (Gtk.Label) widgets.nth_data(1);
             string check_address = ip_addr.get_label();
             if (check_address == ip) {
                 return i;
@@ -241,18 +241,20 @@ public class DropletList: Gtk.ListBox {
         int found_count = 0;
         foreach (var droplet in droplet_list) {
             // forms the ListBox
-            var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 20);
+            var hbox = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 5);
             hbox.set_size_request(-1, 20);
             var name_label = new Gtk.Label(droplet.name);
             var ip_label = new Gtk.Label(droplet.public_ipv4);
-            string ip_tooltip = @"Private: $(droplet.private_ipv4)\nPublic: $(droplet.public_ipv4)\nFloating:" +
+            ip_label.set_width_chars(15);
+            ip_label.set_alignment(0.0f, 0.5f);
+            string ip_tooltip = @"Name: $(droplet.name)\nPrivate: $(droplet.private_ipv4)\nPublic: $(droplet.public_ipv4)\nFloating:" +
                                 @" $(droplet.floating_ip)\nIPv6: $(droplet.public_ipv6)";
             ip_label.set_tooltip_text(ip_tooltip);
-            string info_tooltip = @"ID: $(droplet.id)\nLocation: $(droplet.location)\nImage name:"+
+            string info_tooltip = @"Name: $(droplet.name)\nID: $(droplet.id)\nLocation: $(droplet.location)\nImage name:"+
                                   @" $(droplet.image_name)\nDistribution: $(droplet.image_distribution)\n" +
                                   @"Description: $(droplet.image_description)\nCreated: $(droplet.image_created)";
             name_label.set_tooltip_text(info_tooltip);
-            string status_tooltip = @"vCPUs: $(droplet.size_vcpus)\nStorage: $(droplet.size_storage)GB\n" +
+            string status_tooltip = @"Name: $(droplet.name)\nvCPUs: $(droplet.size_vcpus)\nStorage: $(droplet.size_storage)GB\n" +
                                     @"Memory: $(droplet.size_memory)GB\nMonthly: $$" + @"$(droplet.size_price_monthly)";
             Gtk.Image status_image = new Gtk.Image();
             status_image.set_tooltip_text(status_tooltip);
@@ -264,8 +266,8 @@ public class DropletList: Gtk.ListBox {
                 all_active = false;
             }
             hbox.pack_start(status_image, false, false, 5);
-            hbox.pack_start(name_label, false, false, 5);
-            hbox.pack_end(ip_label, false, false, 10);
+            hbox.pack_start(ip_label, false, false, 0);
+            hbox.pack_start(name_label, false, false, 0);
             this.insert(hbox, -1);
             if (selected_droplet == droplet.id) {
                 this.select_row(this.get_row_at_index(found_count));

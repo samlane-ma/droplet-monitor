@@ -37,7 +37,7 @@ namespace DropletApplet {
 
         private Gtk.Image LOCK_IMAGE;
         private Gtk.Image UNLOCK_IMAGE;
-        const int PIXELSIZE = 32;
+        const int PIXELSIZE = 24;
 
         public DropletPopover(Gtk.EventBox relative_parent, DropletList dl, GLib.Settings settings) {
             Object(relative_to: relative_parent);
@@ -91,7 +91,7 @@ namespace DropletApplet {
             grid.attach(label_spacer,0,0,3,1);
             grid.attach(new Gtk.Separator(Gtk.Orientation.HORIZONTAL), 0, 1, 3, 1);
             grid.attach(scrolled,0,2,3,1);
-            grid.attach(new Gtk.Separator(Gtk.Orientation.HORIZONTAL), 0, 3, 3, 1);
+            //grid.attach(new Gtk.Separator(Gtk.Orientation.HORIZONTAL), 0, 3, 3, 1);
             grid.attach(label_status,0, 4, 3, 1);
             separator = new Gtk.Separator(Gtk.Orientation.HORIZONTAL);
             grid.attach(separator, 0, 5, 3, 1);

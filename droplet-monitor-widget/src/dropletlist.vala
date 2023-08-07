@@ -114,7 +114,7 @@ public class WidgetDropletList: Gtk.ListBox {
     }
 
     public void quit_scan() {
-        // stop thread when widget is removed
+        // stop thread when removed from Budgie Panel
         stay_running = false;
     }
 
@@ -149,7 +149,6 @@ public class WidgetDropletList: Gtk.ListBox {
             return sort_ascending ? strcmp(name[0], name[1]) : 0;
         }
     }
-
 
     /* When a droplet's sort order is changed (i.e when its powered on or off),
      * the index is no longer the same as before, so we need to search through the
@@ -248,14 +247,14 @@ public class WidgetDropletList: Gtk.ListBox {
             var ip_label = new Gtk.Label(droplet.public_ipv4);
             ip_label.set_width_chars(15);
             ip_label.set_alignment(0.0f, 0.5f);
-            string ip_tooltip = @"Private: $(droplet.private_ipv4)\nPublic: $(droplet.public_ipv4)\nFloating:" +
+            string ip_tooltip = @"Name: $(droplet.name)\nPrivate: $(droplet.private_ipv4)\nPublic: $(droplet.public_ipv4)\nFloating:" +
                                 @" $(droplet.floating_ip)\nIPv6: $(droplet.public_ipv6)";
             ip_label.set_tooltip_text(ip_tooltip);
-            string info_tooltip = @"ID: $(droplet.id)\nLocation: $(droplet.location)\nImage name:"+
+            string info_tooltip = @"Name: $(droplet.name)\nID: $(droplet.id)\nLocation: $(droplet.location)\nImage name:"+
                                   @" $(droplet.image_name)\nDistribution: $(droplet.image_distribution)\n" +
                                   @"Description: $(droplet.image_description)\nCreated: $(droplet.image_created)";
             name_label.set_tooltip_text(info_tooltip);
-            string status_tooltip = @"vCPUs: $(droplet.size_vcpus)\nStorage: $(droplet.size_storage)GB\n" +
+            string status_tooltip = @"Name: $(droplet.name)\nvCPUs: $(droplet.size_vcpus)\nStorage: $(droplet.size_storage)GB\n" +
                                     @"Memory: $(droplet.size_memory)GB\nMonthly: $$" + @"$(droplet.size_price_monthly)";
             Gtk.Image status_image = new Gtk.Image();
             status_image.set_tooltip_text(status_tooltip);
@@ -270,6 +269,9 @@ public class WidgetDropletList: Gtk.ListBox {
             hbox.pack_start(ip_label, false, false, 0);
             hbox.pack_start(name_label, false, false, 0);
             this.insert(hbox, -1);
+            if (selected_droplet == droplet.id) {
+                this.select_row(this.get_row_at_index(found_count));
+            }
             found_count++;
         }
         if (found_count == 0) {
@@ -287,7 +289,6 @@ public class WidgetDropletList: Gtk.ListBox {
     }
 
     public string get_selected_ip () {
-        // checks if selection is running so we don't send unneeded signals
         return selected_ip;
     }
 
